@@ -96,6 +96,6 @@ defmodule Strftime.FormatStream do
   end
 
   def stream(<<format::binary-1, rest::binary>>, format_stream) do
-    {%{format_stream | format: format}, rest}
+    {%{format_stream | format: format, section: format_stream.section <> format}, rest}
   end
 end

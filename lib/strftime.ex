@@ -219,7 +219,7 @@ defmodule Strftime do
         datetime.zone_abbr()
 
       _ ->
-        format_stream.section <> format
+        format_stream.section
     end
     |> to_string()
     |> String.pad_leading(width, pad)
