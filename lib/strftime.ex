@@ -1,6 +1,46 @@
 defmodule Strftime do
   @moduledoc """
-  A module that is meant to format a date into a string
+  Library for simple datetime formatting based on the strftime format found on UNIX-like systems
+
+  ## Formatting syntax
+  The formatting syntax for strftime is a sequence of characters in the following format
+  `%<padding><width><format>`
+  * `%`: indicates the start of a formatted section
+  * `<padding>`: is an option to set the padding of the formatted section and accepts the following options
+  * `<width>`: a number indicating the minimun size of the formatted section
+  * `<format>`: the format iself, dictates what info is shown on this formatted section
+
+  ### Accepted padding options
+    * `-`: no padding, removes all padding from the format
+    * `_`: pad with spaces
+    * `0`: pad with zeroes
+
+  ### Accepted formats
+  the accepted formats are as follows, any other character will be interpreted literally and won't be formatted
+  * `%` -  Literally just the `%` char
+  * `a` -  Abbreviated name of the day
+  * `A` -  Name of the day
+  * `b` -  Abbreviated name of the month
+  * `B` -  Name of the month
+  * `c` -  Preferred datetime representation
+  * `d` -  Day of the month
+  * `f` -  Microseconds
+  * `H` -  Hour in Military Time(24 hours)
+  * `I` -  Hour in Regular Time(12 hours)
+  * `J` -  Day of the year
+  * `m` -  Month
+  * `M` -  Minute
+  * `p` -  Period of the day("AM" and "PM") in uppercase
+  * `P` -  Period of the day("am" and "pm") in lowercase
+  * `q` -  Quarter of the year
+  * `S` -  Second
+  * `u` -  Day of the week
+  * `x` -  Preferred date
+  * `X` -  Preferred time
+  * `y` -  Year in two digits
+  * `Y` -  Year
+  * `z` -  Time zone offset from UTC(blank if in naive time)
+  * `Z` -  Time zone abbreviation(Blank if naive)
   """
   alias Strftime.FormatStream
   alias Strftime.FormatOptions
@@ -19,6 +59,9 @@ defmodule Strftime do
     zone_abbr: ""
   }
 
+  @doc """
+    Formats received datetime into a String
+  """
   @spec format(
           Date.t() | Time.t() | NaiveDateTime.t() | DateTime.t(),
           String.t(),
@@ -53,8 +96,6 @@ defmodule Strftime do
       acc <> apply_stream(format_stream, datetime, options_struct)
     )
   end
-
-  defp apply_stream(format_stream, datetime, format_options \\ %FormatOptions{})
 
   defp apply_stream(format_stream = %{format: format, pad: nil}, datetime, format_options) do
     apply_stream(%{format_stream | pad: default_pad(format)}, datetime, format_options)
