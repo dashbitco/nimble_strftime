@@ -1,6 +1,5 @@
 # Strftime
-
-**TODO: Add description**
+A library for parsing and formatting datetimes
 
 ## Installation
 
