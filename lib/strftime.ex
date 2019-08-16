@@ -86,7 +86,7 @@ defmodule Strftime do
   end
 
   defp exec_stream(data, datetime, acc, format_options) do
-    {format_stream, remaining} = FormatStream.stream(data, %FormatStream{})
+    {format_stream, remaining} = stream(data, %FormatStream{})
     options_struct = Map.merge(%FormatOptions{}, format_options)
 
     parse(
@@ -97,6 +97,35 @@ defmodule Strftime do
     )
   end
 
+  @spec stream(String.t(), FormatStream.t()) :: {FormatStream.t(), String.t()}
+  defp stream("", format_stream), do: {format_stream, ""}
+
+  defp stream("-" <> rest, format_stream = %{pad: nil}) do
+    stream(rest, %{format_stream | pad: "-", section: format_stream.section <> "-"})
+  end
+
+  defp stream("0" <> rest, format_stream = %{pad: nil}) do
+    stream(rest, %{format_stream | pad: "0", section: format_stream.section <> "0"})
+  end
+
+  defp stream("_" <> rest, format_stream = %{pad: nil}) do
+    stream(rest, %{format_stream | pad: " ", section: format_stream.section <> "_"})
+  end
+
+  defp stream(<<digit::utf8, rest::binary>>, format_stream = %{pad: pad})
+      when digit > 47 and digit < 58 do
+    new_width =
+      case pad do
+        "-" -> 0
+        _ -> (format_stream.width || 0) * 10 + (digit - 48)
+      end
+
+    stream(rest, %{format_stream | width: new_width, section: format_stream.section <> <<digit>>})
+  end
+
+  defp stream(<<format::binary-1, rest::binary>>, format_stream) do
+    {%{format_stream | format: format, section: format_stream.section <> format}, rest}
+  end
   defp apply_stream(format_stream = %{format: format, pad: nil}, datetime, format_options) do
     apply_stream(%{format_stream | pad: default_pad(format)}, datetime, format_options)
   end
