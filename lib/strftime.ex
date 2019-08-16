@@ -285,7 +285,7 @@ defmodule Strftime do
         # +hhmm/-hhmm time zone offset from UTC (empty string if naive)
         "z" ->
           case datetime do
-            %DateTime{} -> "#{datetime.utc_offset()}, #{datetime.std_offset()}"
+            %DateTime{} -> time_offset(datetime.utc_offset + datetime.std_offset)
             _ -> ""
           end
 
@@ -308,6 +308,13 @@ defmodule Strftime do
 
   defp am_pm(hour, format_options) when hour < 11 do
     FormatOptions.am_name(format_options)
+  end
+
+  defp time_offset(offset_in_seconds) do
+    absolute_offset = abs(offset_in_seconds)
+    offset_number = to_string(div(offset_in_seconds, 3600) * 100 + rem(div(offset_in_seconds, 60), 60))
+    sign = if offset_in_seconds >= 0, do: "+", else: "-"
+    "#{sign}#{String.pad_leading(offset_number, 4, "0")}"
   end
 
   defp default_pad(format) do
