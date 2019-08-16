@@ -141,6 +141,16 @@ defmodule Strftime do
     )
   end
 
+  defp apply_stream(%{format: format}, %Date{}, _format_options, _rest, _acc)
+       when format in ~w(c f H I M p P S X) do
+    raise "format `%#{format}` is not compatible with `Date` structs, please try using a `DateTime` or a `Time`"
+  end
+
+  defp apply_stream(%{format: format}, %Time{}, _format_options, _rest, _acc)
+       when format in ~w(a A b B c d J m q u x y Y) do
+    raise "format `%#{format}` is not compatible with `Time` structs, please try using a `DateTime` or a `Date`"
+  end
+
   defp apply_stream(
          format_stream = %{format: format, pad: nil},
          datetime,
