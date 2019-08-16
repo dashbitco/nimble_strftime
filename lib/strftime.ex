@@ -151,154 +151,8 @@ defmodule Strftime do
     raise "format `%#{format}` is not compatible with `Time` structs, please try using a `DateTime` or a `Date`"
   end
 
-  defp apply_stream(
-         format_stream = %{format: format, pad: nil},
-         datetime,
-         format_options,
-         rest,
-         acc
-       ) do
-    apply_stream(%{format_stream | pad: default_pad(format)}, datetime, format_options, rest, acc)
-  end
-
-  defp apply_stream(
-         format_stream = %{format: format, width: nil},
-         datetime,
-         format_options,
-         rest,
-         acc
-       ) do
-    apply_stream(
-      %{format_stream | width: default_width(format)},
-      datetime,
-      format_options,
-      rest,
-      acc
-    )
-  end
-
-  defp apply_stream(
-         format_stream = %FormatStream{format: format, width: width, pad: pad},
-         datetime,
-         format_options,
-         rest,
-         acc
-       ) do
-    formatted_result =
-      case format do
-        # Literal `%`
-        "%" ->
-          "%"
-
-        # Abbreviated name of day
-        "a" ->
-          datetime
-          |> Date.day_of_week()
-          |> FormatOptions.day_of_week_name_abbreviated(format_options)
-
-        # Full name of day
-        "A" ->
-          datetime
-          |> Date.day_of_week()
-          |> FormatOptions.day_of_week_name(format_options)
-
-        # Abbreviated month name
-        "b" ->
-          FormatOptions.month_name_abbreviated(datetime.month(), format_options)
-
-        # Full month name
-        "B" ->
-          FormatOptions.month_name(datetime.month(), format_options)
-
-        # Preferred date+time representation
-        "c" ->
-          parse(format_options.preferred_datetime, datetime, format_options)
-
-        # Day of the month
-        "d" ->
-          datetime.day()
-
-        # Microseconds
-        "f" ->
-          elem(datetime.microsecond(), 0)
-
-        # Hour using a 24-hour clock
-        "H" ->
-          datetime.hour()
-
-        # Hour using a 12-hour clock
-        "I" ->
-          rem(datetime.hour() + 23, 12) + 1
-
-        # Day of the year
-        "j" ->
-          Date.day_of_year(datetime)
-
-        # Month
-        "m" ->
-          datetime.month()
-
-        # Minute
-        "M" ->
-          datetime.minute()
-
-        # “AM” or “PM” (noon is “PM”, midnight as “AM”)
-        "p" ->
-          datetime.hour()
-          |> am_pm(format_options)
-          |> String.upcase()
-
-        # “am” or “pm” (noon is “pm”, midnight as “am”)
-        "P" ->
-          datetime.hour()
-          |> am_pm(format_options)
-          |> String.downcase()
-
-        # Quarter
-        "q" ->
-          Date.quarter_of_year(datetime)
-
-        # Second
-        "S" ->
-          datetime.second()
-
-        # Day of the week
-        "u" ->
-          Date.day_of_week(datetime)
-
-        # Preferred date (without time) representation
-        "x" ->
-          parse(format_options.preferred_date, datetime, format_options)
-
-        # Preferred time (without date) representation
-        "X" ->
-          parse(format_options.preferred_time, datetime, format_options)
-
-        # Year as 2-digits
-        "y" ->
-          rem(datetime.year(), 100)
-
-        # Year
-        "Y" ->
-          datetime.year()
-
-        # +hhmm/-hhmm time zone offset from UTC (empty string if naive)
-        "z" ->
-          case datetime do
-            %DateTime{} -> time_offset(datetime.utc_offset + datetime.std_offset)
-            _ -> ""
-          end
-
-        # Time zone abbreviation (empty string if naive)
-        "Z" ->
-          Map.get(datetime, :zone_abbr, "")
-
-        _ ->
-          format_stream.section |> Enum.reverse() |> IO.iodata_to_binary()
-      end
-      |> to_string()
-      |> String.pad_leading(width, pad)
-
+  defp apply_stream(format_stream, datetime, format_options, rest, acc) do
+    formatted_result = convert_stream(format_stream, datetime, format_options)
     parse(rest, datetime, format_options, [formatted_result | acc])
   end
 
@@ -308,13 +162,6 @@ defmodule Strftime do
 
   defp am_pm(hour, format_options) when hour < 11 do
     FormatOptions.am_name(format_options)
-  end
-
-  defp time_offset(offset_in_seconds) do
-    absolute_offset = abs(offset_in_seconds)
-    offset_number = to_string(div(offset_in_seconds, 3600) * 100 + rem(div(offset_in_seconds, 60), 60))
-    sign = if offset_in_seconds >= 0, do: "+", else: "-"
-    "#{sign}#{String.pad_leading(offset_number, 4, "0")}"
   end
 
   defp default_pad(format) do
@@ -328,8 +175,147 @@ defmodule Strftime do
     case format do
       format when format in ~w(d H I m M S u y) -> 2
       "j" -> 3
-      "Y" -> 4
+      format when format in ~w(Y z) -> 4
       _ -> 0
     end
+  end
+
+  # set default padding if none was specfied
+  defp convert_stream(format_stream = %{format: format, pad: nil}, datetime, format_options) do
+    convert_stream(%{format_stream | pad: default_pad(format)}, datetime, format_options)
+  end
+
+  # set default width if none was specified
+  defp convert_stream(format_stream = %{format: format, width: nil}, datetime, format_options) do
+    convert_stream(%{format_stream | width: default_width(format)}, datetime, format_options)
+  end
+
+  # Literally just %
+  defp convert_stream(%{format: "%", width: width, pad: pad}, _datetime, _format_options) do
+    String.pad_leading("%", width, pad)
+  end
+
+  # Abbreviated name of day
+  defp convert_stream(%{format: "a", width: width, pad: pad}, datetime, format_options) do
+    datetime |> Date.day_of_week() |> FormatOptions.day_of_week_name_abbreviated(format_options) |> String.pad_leading(width, pad)
+  end
+
+  # Full name of day
+  defp convert_stream(%{format: "A", width: width, pad: pad}, datetime, format_options) do
+    datetime |> Date.day_of_week() |> FormatOptions.day_of_week_name(format_options) |> String.pad_leading(width, pad)
+  end
+
+  # Abbreviated month name
+  defp convert_stream(%{format: "b", width: width, pad: pad}, datetime, format_options) do
+    datetime.month |> FormatOptions.month_name_abbreviated(format_options) |> String.pad_leading(width, pad)
+  end
+
+  # Full month name
+  defp convert_stream(%{format: "B", width: width, pad: pad}, datetime, format_options) do
+    datetime.month |> FormatOptions.month_name(format_options) |> String.pad_leading(width, pad)
+  end
+
+  # Preferred date+time representation
+  defp convert_stream(%{format: "c", width: width, pad: pad}, datetime, format_options) do
+    format_options.preferred_datetime |> parse(datetime, format_options) |> String.pad_leading(width, pad)
+  end
+
+  # Day of the month
+  defp convert_stream(%{format: "d", width: width, pad: pad}, datetime, _format_options) do
+    datetime.day |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Microseconds
+  defp convert_stream(%{format: "f", width: width, pad: pad}, datetime, _format_options) do
+    datetime.microsecond |> elem(0) |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Hour using a 24-hour clock
+  defp convert_stream(%{format: "H", width: width, pad: pad}, datetime, _format_options) do
+    datetime.hour |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Hour using a 12-hour clock
+  defp convert_stream(%{format: "I", width: width, pad: pad}, datetime, _format_options) do
+    rem(datetime.hour() + 23, 12) + 1 |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Day of the year
+  defp convert_stream(%{format: "j", width: width, pad: pad}, datetime, _format_options) do
+    datetime |> Date.day_of_year() |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Month
+  defp convert_stream(%{format: "m", width: width, pad: pad}, datetime, _format_options) do
+    datetime.month |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Minute
+  defp convert_stream(%{format: "M", width: width, pad: pad}, datetime, _format_options) do
+    datetime.minute |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # “AM” or “PM” (noon is “PM”, midnight as “AM”)
+  defp convert_stream(%{format: "p", width: width, pad: pad}, datetime, format_options) do
+    datetime.hour |> am_pm(format_options) |> String.upcase() |> String.pad_leading(width, pad)
+  end
+
+  # “am” or “pm” (noon is “pm”, midnight as “am”)
+  defp convert_stream(%{format: "P", width: width, pad: pad}, datetime, format_options) do
+    datetime.hour |> am_pm(format_options) |> String.downcase() |> String.pad_leading(width, pad)
+  end
+
+  # Quarter
+  defp convert_stream(%{format: "q", width: width, pad: pad}, datetime, _format_options) do
+    datetime |> Date.quarter_of_year() |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Second
+  defp convert_stream(%{format: "S", width: width, pad: pad}, datetime, _format_options) do
+    datetime.second |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Day of the week
+  defp convert_stream(%{format: "u", width: width, pad: pad}, datetime, _format_options) do
+    datetime |> Date.day_of_week() |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Preferred date (without time) representation
+  defp convert_stream(%{format: "x", width: width, pad: pad}, datetime, format_options) do
+    format_options.preferred_date |> parse(datetime, format_options) |> String.pad_leading(width, pad)
+  end
+
+  # Preferred time (without date) representation
+  defp convert_stream(%{format: "X", width: width, pad: pad}, datetime, format_options) do
+    format_options.preferred_time |> parse(datetime, format_options) |> String.pad_leading(width, pad)
+  end
+
+  # Year as 2-digits
+  defp convert_stream(%{format: "y", width: width, pad: pad}, datetime, _format_options) do
+    datetime.year |> rem(100) |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # Year
+  defp convert_stream(%{format: "Y", width: width, pad: pad}, datetime, _format_options) do
+    datetime.year |> to_string() |> String.pad_leading(width, pad)
+  end
+
+  # +hhmm/-hhmm time zone offset from UTC (empty string if naive)
+  defp convert_stream(%{format: "z", width: width, pad: pad}, datetime = %DateTime{}, _format_options) do
+    absolute_offset = abs(datetime.utc_offset + datetime.std_offset)
+    offset_number = to_string(div(absolute_offset, 3600) * 100 + rem(div(absolute_offset, 60), 60))
+    sign = if datetime.utc_offset + datetime.std_offset >= 0, do: "+", else: "-"
+    "#{sign}#{String.pad_leading(offset_number, width, pad)}"
+  end
+  defp convert_stream(%{format: "z"}, _datetime, _format_options), do: ""
+
+  # Time zone abbreviation (empty string if naive)
+  defp convert_stream(%{format: "Z", width: width, pad: pad}, datetime, _format_options) do
+    datetime |> Map.get(:zone_abbr, "") |> String.pad_leading(width, pad)
+  end
+
+  # a non-formatable string that started with the format sign
+  defp convert_stream(format_stream, _datetime, _format_options) do
+    format_stream.section |> Enum.reverse() |> IO.iodata_to_binary()
   end
 end
