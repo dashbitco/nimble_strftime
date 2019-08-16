@@ -57,14 +57,14 @@ defmodule Strftime do
     parse(string_format, date_or_time_or_datetime, Map.new(format_options))
   end
 
-  defp parse(data, datetime, format_options, acc \\ "")
-  defp parse("", _datetime, _format_options, acc), do: acc
+  defp parse(data, datetime, format_options, acc \\ [])
+  defp parse("", _datetime, _format_options, acc), do: acc |> Enum.reverse() |> IO.iodata_to_binary()
 
   defp parse("%" <> rest, datetime, format_options, acc),
     do: exec_stream(rest, datetime, acc, format_options)
 
   defp parse(<<char::binary-1, rest::binary>>, datetime, format_options, acc) do
-    parse(rest, datetime, format_options, acc <> char)
+    parse(rest, datetime, format_options, [char | acc])
   end
 
   defp exec_stream(data, datetime, acc, format_options) do
@@ -75,7 +75,7 @@ defmodule Strftime do
       remaining,
       datetime,
       format_options,
-      acc <> apply_stream(format_stream, datetime, options_struct)
+      [apply_stream(format_stream, datetime, options_struct) | acc]
     )
   end
 
