@@ -45,20 +45,6 @@ defmodule Strftime do
   alias Strftime.FormatStream
   alias Strftime.FormatOptions
 
-  @empty_date %{
-    day: 1,
-    hour: 0,
-    microsecond: {0, 0},
-    minute: 0,
-    month: 1,
-    second: 0,
-    year: 0,
-    std_offset: 0,
-    time_zone: "",
-    utc_offset: 0,
-    zone_abbr: ""
-  }
-
   @doc """
     Formats received datetime into a String
   """
@@ -68,11 +54,7 @@ defmodule Strftime do
           FormatOptions.options()
         ) :: String.t()
   def format(date_or_time_or_datetime, string_format, format_options \\ []) do
-    datetime =
-      @empty_date
-      |> Map.merge(date_or_time_or_datetime)
-
-    parse(string_format, datetime, Map.new(format_options))
+    parse(string_format, date_or_time_or_datetime, Map.new(format_options))
   end
 
   defp parse(data, datetime, format_options, acc \\ "")
@@ -113,14 +95,18 @@ defmodule Strftime do
   end
 
   defp parse_stream(<<digit::utf8, rest::binary>>, format_stream = %{pad: pad})
-      when digit > 47 and digit < 58 do
+       when digit > 47 and digit < 58 do
     new_width =
       case pad do
         "-" -> 0
         _ -> (format_stream.width || 0) * 10 + (digit - 48)
       end
 
-    parse_stream(rest, %{format_stream | width: new_width, section: format_stream.section <> <<digit>>})
+    parse_stream(rest, %{
+      format_stream
+      | width: new_width,
+        section: format_stream.section <> <<digit>>
+    })
   end
 
   defp parse_stream(<<format::binary-1, rest::binary>>, format_stream) do
@@ -246,7 +232,7 @@ defmodule Strftime do
 
       # Time zone abbreviation (empty string if naive)
       "Z" ->
-        datetime.zone_abbr()
+        Map.get(datetime, :zone_abbr, "")
 
       _ ->
         format_stream.section

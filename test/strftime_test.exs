@@ -3,14 +3,6 @@ defmodule StrftimeTest do
   doctest Strftime
 
   describe "format/3" do
-    test "format all date fields with the smallest valid value when receiving a Time" do
-      assert Strftime.format(~T[17:07:57.001], "%x") == "0000-01-01"
-    end
-
-    test "format all time fields with zeroes when receiving a date" do
-      assert Strftime.format(~D[2019-08-15], "%X") == "00:00:00"
-    end
-
     test "format all time zones blank when receiving a NaiveDateTime" do
       assert Strftime.format(~N[2019-08-15 17:07:57.001], "%z%Z") == ""
     end

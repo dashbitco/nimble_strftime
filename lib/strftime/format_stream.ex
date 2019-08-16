@@ -63,5 +63,4 @@ defmodule Strftime.FormatStream do
           section: String.t()
         }
   defstruct [:format, :width, :pad, section: "%"]
-
 end
