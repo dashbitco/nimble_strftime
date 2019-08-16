@@ -60,7 +60,7 @@ defmodule Strftime.FormatStream do
           format: nil | String.t(),
           width: nil | integer(),
           pad: nil | String.t(),
-          section: String.t()
+          section: list(String.t())
         }
-  defstruct [:format, :width, :pad, section: "%"]
+  defstruct [:format, :width, :pad, section: ["%"]]
 end

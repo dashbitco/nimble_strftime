@@ -58,7 +58,9 @@ defmodule Strftime do
   end
 
   defp parse(data, datetime, format_options, acc \\ [])
-  defp parse("", _datetime, _format_options, acc), do: acc |> Enum.reverse() |> IO.iodata_to_binary()
+
+  defp parse("", _datetime, _format_options, acc),
+    do: acc |> Enum.reverse() |> IO.iodata_to_binary()
 
   defp parse("%" <> rest, datetime, format_options, acc),
     do: exec_stream(rest, datetime, acc, format_options)
@@ -83,15 +85,15 @@ defmodule Strftime do
   defp parse_stream("", format_stream), do: {format_stream, ""}
 
   defp parse_stream("-" <> rest, format_stream = %{pad: nil}) do
-    parse_stream(rest, %{format_stream | pad: "-", section: format_stream.section <> "-"})
+    parse_stream(rest, %{format_stream | pad: "-", section: ["-" | format_stream.section]})
   end
 
   defp parse_stream("0" <> rest, format_stream = %{pad: nil}) do
-    parse_stream(rest, %{format_stream | pad: "0", section: format_stream.section <> "0"})
+    parse_stream(rest, %{format_stream | pad: "0", section: ["0" | format_stream.section]})
   end
 
   defp parse_stream("_" <> rest, format_stream = %{pad: nil}) do
-    parse_stream(rest, %{format_stream | pad: " ", section: format_stream.section <> "_"})
+    parse_stream(rest, %{format_stream | pad: " ", section: ["_" | format_stream.section]})
   end
 
   defp parse_stream(<<digit::utf8, rest::binary>>, format_stream = %{pad: pad})
@@ -105,12 +107,12 @@ defmodule Strftime do
     parse_stream(rest, %{
       format_stream
       | width: new_width,
-        section: format_stream.section <> <<digit>>
+        section: [<<digit>> | format_stream.section]
     })
   end
 
   defp parse_stream(<<format::binary-1, rest::binary>>, format_stream) do
-    {%{format_stream | format: format, section: format_stream.section <> format}, rest}
+    {%{format_stream | format: format, section: [format | format_stream.section]}, rest}
   end
 
   defp apply_stream(format_stream = %{format: format, pad: nil}, datetime, format_options) do
@@ -235,7 +237,7 @@ defmodule Strftime do
         Map.get(datetime, :zone_abbr, "")
 
       _ ->
-        format_stream.section
+        format_stream.section |> Enum.reverse() |> IO.iodata_to_binary()
     end
     |> to_string()
     |> String.pad_leading(width, pad)
