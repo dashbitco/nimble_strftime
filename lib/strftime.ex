@@ -114,7 +114,7 @@ defmodule Strftime do
     FormatOptions.pm_name(format_options)
   end
 
-  defp am_pm(hour, format_options) when hour < 11 do
+  defp am_pm(hour, format_options) when hour <= 11 do
     FormatOptions.am_name(format_options)
   end
 
