@@ -335,9 +335,4 @@ defmodule Strftime do
   defp convert_stream(%{format: "Z", width: width, pad: pad}, datetime, _format_options) do
     datetime |> Map.get(:zone_abbr, "") |> String.pad_leading(width, pad)
   end
-
-  # a non-formatable string that started with the format sign
-  defp convert_stream(format_stream, _datetime, _format_options) do
-    format_stream.section |> Enum.reverse() |> IO.iodata_to_binary()
-  end
 end
