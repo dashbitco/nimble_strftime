@@ -106,17 +106,8 @@ defmodule Strftime do
     parse_stream(rest, new_width, pad, parser_data)
   end
 
-  defp parse_stream(<<format::binary-1, rest::binary>>, width, pad, [
-         datetime,
-         format_options,
-         acc
-       ]) do
-    apply_stream(format, width, pad, datetime, format_options, rest, acc)
-  end
-
-  defp apply_stream(format, width, pad, datetime, format_options, rest, acc) do
-    formatted_result = convert_stream(format, width, pad, datetime, format_options)
-    parse(rest, datetime, format_options, [formatted_result | acc])
+  defp parse_stream(rest, width, pad, [datetime, format_options, acc]) do
+    convert_stream(rest, width, pad, datetime, format_options, acc)
   end
 
   defp am_pm(hour, format_options) when hour > 11 do
@@ -144,146 +135,203 @@ defmodule Strftime do
   end
 
   # set default padding if none was specfied
-  defp convert_stream(format, width, nil, datetime, format_options) do
-    convert_stream(format, width, default_pad(format), datetime, format_options)
+  defp convert_stream(
+         stream = <<format::binary-1, _rest::binary>>,
+         width,
+         nil,
+         datetime,
+         format_options,
+         acc
+       ) do
+    convert_stream(stream, width, default_pad(format), datetime, format_options, acc)
   end
 
   # set default width if none was specified
-  defp convert_stream(format, nil, pad, datetime, format_options) do
-    convert_stream(format, default_width(format), pad, datetime, format_options)
+  defp convert_stream(
+         stream = <<format::binary-1, _rest::binary>>,
+         nil,
+         pad,
+         datetime,
+         format_options,
+         acc
+       ) do
+    convert_stream(stream, default_width(format), pad, datetime, format_options, acc)
   end
 
   # Literally just %
-  defp convert_stream("%", width, pad, _datetime, _format_options) do
-    String.pad_leading("%", width, pad)
+  defp convert_stream("%" <> rest, width, pad, datetime, format_options, acc) do
+    parse(rest, datetime, format_options, [String.pad_leading("%", width, pad) | acc])
   end
 
   # Abbreviated name of day
-  defp convert_stream("a", width, pad, datetime, format_options) do
-    datetime
-    |> Date.day_of_week()
-    |> FormatOptions.day_of_week_name_abbreviated(format_options)
-    |> String.pad_leading(width, pad)
+  defp convert_stream("a" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      datetime
+      |> Date.day_of_week()
+      |> FormatOptions.day_of_week_name_abbreviated(format_options)
+      |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Full name of day
-  defp convert_stream("A", width, pad, datetime, format_options) do
-    datetime
-    |> Date.day_of_week()
-    |> FormatOptions.day_of_week_name(format_options)
-    |> String.pad_leading(width, pad)
+  defp convert_stream("A" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      datetime
+      |> Date.day_of_week()
+      |> FormatOptions.day_of_week_name(format_options)
+      |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Abbreviated month name
-  defp convert_stream("b", width, pad, datetime, format_options) do
-    datetime.month
-    |> FormatOptions.month_name_abbreviated(format_options)
-    |> String.pad_leading(width, pad)
+  defp convert_stream("b" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      datetime.month
+      |> FormatOptions.month_name_abbreviated(format_options)
+      |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Full month name
-  defp convert_stream("B", width, pad, datetime, format_options) do
-    datetime.month |> FormatOptions.month_name(format_options) |> String.pad_leading(width, pad)
+  defp convert_stream("B" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      datetime.month |> FormatOptions.month_name(format_options) |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Preferred date+time representation
-  defp convert_stream("c", width, pad, datetime, format_options) do
-    format_options.preferred_datetime
-    |> parse(datetime, format_options)
-    |> String.pad_leading(width, pad)
+  defp convert_stream("c" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      format_options.preferred_datetime
+      |> parse(datetime, format_options)
+      |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Day of the month
-  defp convert_stream("d", width, pad, datetime, _format_options) do
-    datetime.day |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("d" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.day |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Microseconds
-  defp convert_stream("f", width, pad, datetime, _format_options) do
-    datetime.microsecond |> elem(0) |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("f" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.microsecond |> elem(0) |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Hour using a 24-hour clock
-  defp convert_stream("H", width, pad, datetime, _format_options) do
-    datetime.hour |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("H" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.hour |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Hour using a 12-hour clock
-  defp convert_stream("I", width, pad, datetime, _format_options) do
-    (rem(datetime.hour() + 23, 12) + 1) |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("I" <> rest, width, pad, datetime, format_options, acc) do
+    result = (rem(datetime.hour() + 23, 12) + 1) |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Day of the year
-  defp convert_stream("j", width, pad, datetime, _format_options) do
-    datetime |> Date.day_of_year() |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("j" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime |> Date.day_of_year() |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Month
-  defp convert_stream("m", width, pad, datetime, _format_options) do
-    datetime.month |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("m" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.month |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Minute
-  defp convert_stream("M", width, pad, datetime, _format_options) do
-    datetime.minute |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("M" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.minute |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # “AM” or “PM” (noon is “PM”, midnight as “AM”)
-  defp convert_stream("p", width, pad, datetime, format_options) do
-    datetime.hour |> am_pm(format_options) |> String.upcase() |> String.pad_leading(width, pad)
+  defp convert_stream("p" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      datetime.hour |> am_pm(format_options) |> String.upcase() |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # “am” or “pm” (noon is “pm”, midnight as “am”)
-  defp convert_stream("P", width, pad, datetime, format_options) do
-    datetime.hour |> am_pm(format_options) |> String.downcase() |> String.pad_leading(width, pad)
+  defp convert_stream("P" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      datetime.hour
+      |> am_pm(format_options)
+      |> String.downcase()
+      |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Quarter
-  defp convert_stream("q", width, pad, datetime, _format_options) do
-    datetime |> Date.quarter_of_year() |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("q" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime |> Date.quarter_of_year() |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Second
-  defp convert_stream("S", width, pad, datetime, _format_options) do
-    datetime.second |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("S" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.second |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Day of the week
-  defp convert_stream("u", width, pad, datetime, _format_options) do
-    datetime |> Date.day_of_week() |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("u" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime |> Date.day_of_week() |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Preferred date (without time) representation
-  defp convert_stream("x", width, pad, datetime, format_options) do
-    format_options.preferred_date
-    |> parse(datetime, format_options)
-    |> String.pad_leading(width, pad)
+  defp convert_stream("x" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      format_options.preferred_date
+      |> parse(datetime, format_options)
+      |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Preferred time (without date) representation
-  defp convert_stream("X", width, pad, datetime, format_options) do
-    format_options.preferred_time
-    |> parse(datetime, format_options)
-    |> String.pad_leading(width, pad)
+  defp convert_stream("X" <> rest, width, pad, datetime, format_options, acc) do
+    result =
+      format_options.preferred_time
+      |> parse(datetime, format_options)
+      |> String.pad_leading(width, pad)
+
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Year as 2-digits
-  defp convert_stream("y", width, pad, datetime, _format_options) do
-    datetime.year |> rem(100) |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("y" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.year |> rem(100) |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Year
-  defp convert_stream("Y", width, pad, datetime, _format_options) do
-    datetime.year |> to_string() |> String.pad_leading(width, pad)
+  defp convert_stream("Y" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime.year |> to_string() |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # +hhmm/-hhmm time zone offset from UTC (empty string if naive)
   defp convert_stream(
-         "z",
+         "z" <> rest,
          width,
          pad,
          datetime = %{utc_offset: utc_offset, std_offset: std_offset},
-         _format_options
+         format_options,
+         acc
        ) do
     absolute_offset = abs(utc_offset + std_offset)
 
@@ -291,13 +339,17 @@ defmodule Strftime do
       to_string(div(absolute_offset, 3600) * 100 + rem(div(absolute_offset, 60), 60))
 
     sign = if datetime.utc_offset + datetime.std_offset >= 0, do: "+", else: "-"
-    "#{sign}#{String.pad_leading(offset_number, width, pad)}"
+    result = "#{sign}#{String.pad_leading(offset_number, width, pad)}"
+    parse(rest, datetime, format_options, [result | acc])
   end
 
-  defp convert_stream("z", _width, _pad, _datetime, _format_options), do: ""
+  defp convert_stream("z" <> rest, _width, _pad, datetime, format_options, acc) do
+    parse(rest, datetime, format_options, ["" | acc])
+  end
 
   # Time zone abbreviation (empty string if naive)
-  defp convert_stream("Z", width, pad, datetime, _format_options) do
-    datetime |> Map.get(:zone_abbr, "") |> String.pad_leading(width, pad)
+  defp convert_stream("Z" <> rest, width, pad, datetime, format_options, acc) do
+    result = datetime |> Map.get(:zone_abbr, "") |> String.pad_leading(width, pad)
+    parse(rest, datetime, format_options, [result | acc])
   end
 end
