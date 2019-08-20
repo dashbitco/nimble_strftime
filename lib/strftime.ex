@@ -27,7 +27,7 @@ defmodule Strftime do
   * `f` -  Microseconds
   * `H` -  Hour in Military Time(24 hours)
   * `I` -  Hour in Regular Time(12 hours)
-  * `J` -  Day of the year
+  * `j` -  Day of the year
   * `m` -  Month
   * `M` -  Minute
   * `p` -  Period of the day("AM" and "PM") in uppercase
