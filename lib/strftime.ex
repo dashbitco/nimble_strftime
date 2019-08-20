@@ -197,17 +197,25 @@ defmodule Strftime do
 
   # Abbreviated name of day
   defp convert_stream(%{format: "a", width: width, pad: pad}, datetime, format_options) do
-    datetime |> Date.day_of_week() |> FormatOptions.day_of_week_name_abbreviated(format_options) |> String.pad_leading(width, pad)
+    datetime
+    |> Date.day_of_week()
+    |> FormatOptions.day_of_week_name_abbreviated(format_options)
+    |> String.pad_leading(width, pad)
   end
 
   # Full name of day
   defp convert_stream(%{format: "A", width: width, pad: pad}, datetime, format_options) do
-    datetime |> Date.day_of_week() |> FormatOptions.day_of_week_name(format_options) |> String.pad_leading(width, pad)
+    datetime
+    |> Date.day_of_week()
+    |> FormatOptions.day_of_week_name(format_options)
+    |> String.pad_leading(width, pad)
   end
 
   # Abbreviated month name
   defp convert_stream(%{format: "b", width: width, pad: pad}, datetime, format_options) do
-    datetime.month |> FormatOptions.month_name_abbreviated(format_options) |> String.pad_leading(width, pad)
+    datetime.month
+    |> FormatOptions.month_name_abbreviated(format_options)
+    |> String.pad_leading(width, pad)
   end
 
   # Full month name
@@ -217,7 +225,9 @@ defmodule Strftime do
 
   # Preferred date+time representation
   defp convert_stream(%{format: "c", width: width, pad: pad}, datetime, format_options) do
-    format_options.preferred_datetime |> parse(datetime, format_options) |> String.pad_leading(width, pad)
+    format_options.preferred_datetime
+    |> parse(datetime, format_options)
+    |> String.pad_leading(width, pad)
   end
 
   # Day of the month
@@ -237,7 +247,7 @@ defmodule Strftime do
 
   # Hour using a 12-hour clock
   defp convert_stream(%{format: "I", width: width, pad: pad}, datetime, _format_options) do
-    rem(datetime.hour() + 23, 12) + 1 |> to_string() |> String.pad_leading(width, pad)
+    (rem(datetime.hour() + 23, 12) + 1) |> to_string() |> String.pad_leading(width, pad)
   end
 
   # Day of the year
@@ -282,12 +292,16 @@ defmodule Strftime do
 
   # Preferred date (without time) representation
   defp convert_stream(%{format: "x", width: width, pad: pad}, datetime, format_options) do
-    format_options.preferred_date |> parse(datetime, format_options) |> String.pad_leading(width, pad)
+    format_options.preferred_date
+    |> parse(datetime, format_options)
+    |> String.pad_leading(width, pad)
   end
 
   # Preferred time (without date) representation
   defp convert_stream(%{format: "X", width: width, pad: pad}, datetime, format_options) do
-    format_options.preferred_time |> parse(datetime, format_options) |> String.pad_leading(width, pad)
+    format_options.preferred_time
+    |> parse(datetime, format_options)
+    |> String.pad_leading(width, pad)
   end
 
   # Year as 2-digits
@@ -301,12 +315,20 @@ defmodule Strftime do
   end
 
   # +hhmm/-hhmm time zone offset from UTC (empty string if naive)
-  defp convert_stream(%{format: "z", width: width, pad: pad}, datetime = %DateTime{}, _format_options) do
+  defp convert_stream(
+         %{format: "z", width: width, pad: pad},
+         datetime = %DateTime{},
+         _format_options
+       ) do
     absolute_offset = abs(datetime.utc_offset + datetime.std_offset)
-    offset_number = to_string(div(absolute_offset, 3600) * 100 + rem(div(absolute_offset, 60), 60))
+
+    offset_number =
+      to_string(div(absolute_offset, 3600) * 100 + rem(div(absolute_offset, 60), 60))
+
     sign = if datetime.utc_offset + datetime.std_offset >= 0, do: "+", else: "-"
     "#{sign}#{String.pad_leading(offset_number, width, pad)}"
   end
+
   defp convert_stream(%{format: "z"}, _datetime, _format_options), do: ""
 
   # Time zone abbreviation (empty string if naive)
