@@ -3,8 +3,30 @@ defmodule StrftimeTest do
   doctest Strftime
 
   describe "format/3" do
+    test "return received string if there is no datetime formatting to be found in it" do
+      assert Strftime.format(~N[2019-08-20 15:47:34.001], "muda string") == "muda string"
+    end
+
     test "format all time zones blank when receiving a NaiveDateTime" do
       assert Strftime.format(~N[2019-08-15 17:07:57.001], "%z%Z") == ""
+    end
+
+    test "raise error when trying to format a date with a map that has no date fields" do
+      time_without_date = %{hour: 15, minute: 47, second: 34, microsecond: {0, 0}}
+
+      assert_raise(KeyError, fn -> Strftime.format(time_without_date, "%x") end)
+    end
+
+    test "raise error when trying to format a time with a map that has no time fields" do
+      date_without_time = %{year: 2019, month: 8, day: 20}
+
+      assert_raise(KeyError, fn -> Strftime.format(date_without_time, "%X") end)
+    end
+
+    test "raise error when the format is invalid" do
+      assert_raise(FunctionClauseError, fn ->
+        Strftime.format(~N[2019-08-20 15:47:34.001], "%-2-ç")
+      end)
     end
 
     test "return `hour:minute:seconds PM` when receiving `%I:%M:%S %p`" do
