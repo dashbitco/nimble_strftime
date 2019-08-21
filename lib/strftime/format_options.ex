@@ -16,23 +16,13 @@ defmodule Strftime.FormatOptions do
           day_of_week_names: list(String.t()),
           abbreviation_size: integer()
         }
-  defstruct preferred_date: Application.get_env(:strftime, :preferred_date, "%Y-%m-%d"),
-            preferred_time: Application.get_env(:strftime, :preferred_time, "%H:%M:%S"),
-            preferred_datetime:
-              Application.get_env(:strftime, :preferred_datetime, "%Y-%m-%d %H:%M:%S"),
-            am_pm_names: Application.get_env(:strftime, :am_pm_names, {"am", "pm"}),
+  defstruct preferred_date: "%Y-%m-%d",
+            preferred_time: "%H:%M:%S",
+            preferred_datetime: "%Y-%m-%d %H:%M:%S",
+            am_pm_names: {"am", "pm"},
             month_names:
-              Application.get_env(
-                :strftime,
-                :month_names,
-                ~w(January February March April May June July August September October November December)
-              ),
-            day_of_week_names:
-              Application.get_env(
-                :strftime,
-                :day_of_week_names,
-                ~w(Monday Tuesday Wednesday Thursday Friday Saturday Sunday)
-              ),
+              ~w(January February March April May June July August September October November December),
+            day_of_week_names: ~w(Monday Tuesday Wednesday Thursday Friday Saturday Sunday),
             abbreviation_size: 3
 
   @typedoc "Accepted configuration options to be used by Strftime"
