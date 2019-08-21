@@ -38,8 +38,17 @@ defmodule Strftime.FormatOptionsTest do
   end
 
   describe "month_name_abbreviated/2" do
-    test "return the name of the month abbreviated" do
+    test "return the name of the month abbreviated to 3 chars when abbreviation_size is not configured" do
       assert FormatOptions.month_name_abbreviated(11, %FormatOptions{}) == "Nov"
+    end
+
+    test "return the name of the month abbreviated to the configured abbreviation_size" do
+      assert(
+        FormatOptions.month_name_abbreviated(
+          11,
+          %FormatOptions{abbreviation_size: 6}
+        ) == "Novemb"
+      )
     end
   end
 
@@ -60,8 +69,17 @@ defmodule Strftime.FormatOptionsTest do
   end
 
   describe "day_of_week_name_abbreviated/2" do
-    test "return the name of the day of the week abbreviated" do
+    test "return the name of the day of the week abbreviated to 3 chars when abbreviation_size is not configured" do
       assert FormatOptions.day_of_week_name_abbreviated(1, %FormatOptions{}) == "Mon"
+    end
+
+    test "return the name of the day of the week abbreviated to the configured abbreviation_size" do
+      assert(
+        FormatOptions.day_of_week_name_abbreviated(
+          1,
+          %FormatOptions{abbreviation_size: 4}
+        ) == "Mond"
+      )
     end
   end
 end

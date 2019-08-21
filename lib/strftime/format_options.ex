@@ -36,6 +36,7 @@ defmodule Strftime.FormatOptions do
           | {:am_pm_names, {String.t(), String.t()}}
           | {:month_names, list(String.t())}
           | {:day_of_week_names, list(String.t())}
+          | {:abbreviation_size, integer()}
 
   @doc "Returns the `am_name` configured for the received format_options struct"
   @spec am_name(t()) :: String.t()
