@@ -58,12 +58,13 @@ defmodule NimbleStrftime do
       date_or_time_or_datetime,
       Map.merge(%FormatOptions{}, Map.new(format_options))
     )
+    |> IO.iodata_to_binary()
   end
 
   defp parse(data, datetime, format_options, acc \\ [])
 
   defp parse("", _datetime, _format_options, acc),
-    do: acc |> Enum.reverse() |> IO.iodata_to_binary()
+    do: acc |> Enum.reverse()
 
   defp parse("%" <> rest, datetime, format_options, acc),
     do: parse_stream(rest, nil, nil, [datetime, format_options, acc])
@@ -77,7 +78,7 @@ defmodule NimbleStrftime do
           integer() | nil,
           String.t() | nil,
           list()
-        ) :: String.t()
+        ) :: list()
   defp parse_stream("-" <> rest, width, nil, parser_data) do
     parse_stream(rest, width, "-", parser_data)
   end
@@ -220,7 +221,7 @@ defmodule NimbleStrftime do
     result =
       format_options.preferred_datetime
       |> parse(datetime, %{format_options | preferred_datetime_invoked: true})
-      |> String.pad_leading(width, pad)
+      |> pad_preferred(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
   end
@@ -321,7 +322,7 @@ defmodule NimbleStrftime do
     result =
       format_options.preferred_date
       |> parse(datetime, %{format_options | preferred_date_invoked: true})
-      |> String.pad_leading(width, pad)
+      |> pad_preferred(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
   end
@@ -343,7 +344,7 @@ defmodule NimbleStrftime do
     result =
       format_options.preferred_time
       |> parse(datetime, %{format_options | preferred_time_invoked: true})
-      |> String.pad_leading(width, pad)
+      |> pad_preferred(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
   end
@@ -388,4 +389,10 @@ defmodule NimbleStrftime do
     result = datetime |> Map.get(:zone_abbr, "") |> String.pad_leading(width, pad)
     parse(rest, datetime, format_options, [result | acc])
   end
+
+  defp pad_preferred(result, width, pad) when length(result) < width do
+    pad_preferred([pad | result], width, pad)
+  end
+
+  defp pad_preferred(result, _width, _pad), do: result
 end
