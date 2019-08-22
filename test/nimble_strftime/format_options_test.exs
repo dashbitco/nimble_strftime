@@ -1,6 +1,6 @@
-defmodule Strftime.FormatOptionsTest do
+defmodule NimbleStrftime.FormatOptionsTest do
   use ExUnit.Case
-  alias Strftime.FormatOptions
+  alias NimbleStrftime.FormatOptions
 
   describe "am_name/1" do
     test "return \"am\" on default settings" do

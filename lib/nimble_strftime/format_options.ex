@@ -1,8 +1,8 @@
-defmodule Strftime.FormatOptions do
+defmodule NimbleStrftime.FormatOptions do
   @moduledoc """
   Module for setting and retrieving configurable formatting options
   """
-  alias Strftime.FormatOptions
+  alias NimbleStrftime.FormatOptions
 
   @typedoc """
   Struct that holds configuration options, loads the application defaults on the configs
@@ -31,10 +31,10 @@ defmodule Strftime.FormatOptions do
             preferred_date_invoked: false,
             preferred_time_invoked: false
 
-  @typedoc "Accepted configuration options to be used by Strftime"
+  @typedoc "Accepted configuration options to be used by NimbleStrftime"
   @type options :: [option]
 
-  @typedoc "Accepted configuration option to be used by Strftime"
+  @typedoc "Accepted configuration option to be used by NimbleStrftime"
   @type option ::
           {:preferred_date, String.t()}
           | {:preferred_time, String.t()}

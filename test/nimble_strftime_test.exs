@@ -1,55 +1,55 @@
-defmodule StrftimeTest do
+defmodule NimbleStrftimeTest do
   use ExUnit.Case
-  doctest Strftime
+  doctest NimbleStrftime
 
   describe "format/3" do
     test "return received string if there is no datetime formatting to be found in it" do
-      assert Strftime.format(~N[2019-08-20 15:47:34.001], "muda string") == "muda string"
+      assert NimbleStrftime.format(~N[2019-08-20 15:47:34.001], "muda string") == "muda string"
     end
 
     test "format all time zones blank when receiving a NaiveDateTime" do
-      assert Strftime.format(~N[2019-08-15 17:07:57.001], "%z%Z") == ""
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.001], "%z%Z") == ""
     end
 
     test "raise error when trying to format a date with a map that has no date fields" do
       time_without_date = %{hour: 15, minute: 47, second: 34, microsecond: {0, 0}}
 
-      assert_raise(KeyError, fn -> Strftime.format(time_without_date, "%x") end)
+      assert_raise(KeyError, fn -> NimbleStrftime.format(time_without_date, "%x") end)
     end
 
     test "raise error when trying to format a time with a map that has no time fields" do
       date_without_time = %{year: 2019, month: 8, day: 20}
 
-      assert_raise(KeyError, fn -> Strftime.format(date_without_time, "%X") end)
+      assert_raise(KeyError, fn -> NimbleStrftime.format(date_without_time, "%X") end)
     end
 
     test "raise error when the format is invalid" do
       assert_raise(FunctionClauseError, fn ->
-        Strftime.format(~N[2019-08-20 15:47:34.001], "%-2-ç")
+        NimbleStrftime.format(~N[2019-08-20 15:47:34.001], "%-2-ç")
       end)
     end
 
     test "raise error when the preferred_datetime calls itself" do
       assert_raise(RuntimeError, fn ->
-        Strftime.format(~N[2019-08-20 15:47:34.001], "%c", preferred_datetime: "%c")
+        NimbleStrftime.format(~N[2019-08-20 15:47:34.001], "%c", preferred_datetime: "%c")
       end)
     end
 
     test "raise error when the preferred_date calls itself" do
       assert_raise(RuntimeError, fn ->
-        Strftime.format(~N[2019-08-20 15:47:34.001], "%x", preferred_date: "%x")
+        NimbleStrftime.format(~N[2019-08-20 15:47:34.001], "%x", preferred_date: "%x")
       end)
     end
 
     test "raise error when the preferred_time calls itself" do
       assert_raise(RuntimeError, fn ->
-        Strftime.format(~N[2019-08-20 15:47:34.001], "%X", preferred_time: "%X")
+        NimbleStrftime.format(~N[2019-08-20 15:47:34.001], "%X", preferred_time: "%X")
       end)
     end
 
     test "raise error when the preferred formats create a circular chain" do
       assert_raise(RuntimeError, fn ->
-        Strftime.format(~N[2019-08-20 15:47:34.001], "%c",
+        NimbleStrftime.format(~N[2019-08-20 15:47:34.001], "%c",
           preferred_datetime: "%x",
           preferred_date: "%X",
           preferred_time: "%c"
@@ -59,17 +59,17 @@ defmodule StrftimeTest do
 
     test "format with no errors is the preferred formats are included multiple times on the same string" do
       assert(
-        Strftime.format(~N[2019-08-15 17:07:57.001], "%c %c %x %x %X %X") ==
+        NimbleStrftime.format(~N[2019-08-15 17:07:57.001], "%c %c %x %x %X %X") ==
           "2019-08-15 17:07:57 2019-08-15 17:07:57 2019-08-15 2019-08-15 17:07:57 17:07:57"
       )
     end
 
     test "return `hour:minute:seconds PM` when receiving `%I:%M:%S %p`" do
-      assert Strftime.format(~U[2019-08-15 17:07:57.001Z], "%I:%M:%S %p") == "05:07:57 PM"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.001Z], "%I:%M:%S %p") == "05:07:57 PM"
     end
 
     test "ignore width when receiving the `-` padding option" do
-      assert Strftime.format(~T[17:07:57.001], "%-999M") == "7"
+      assert NimbleStrftime.format(~T[17:07:57.001], "%-999M") == "7"
     end
 
     test "format time zones correctly when receiving a DateTime" do
@@ -87,11 +87,11 @@ defmodule StrftimeTest do
         time_zone: "UK"
       }
 
-      assert Strftime.format(datetime_with_zone, "%z %Z") == "+0300 EEST"
+      assert NimbleStrftime.format(datetime_with_zone, "%z %Z") == "+0300 EEST"
     end
 
     test "return the formatted datetime when all format options and modifiers are received" do
-      assert Strftime.format(
+      assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
                "%04% %a %A %b %B %-3c %d %f %H %I %j %m %_5M %p %P %q %S %u %x %X %y %Y %z %Z"
              ) ==
@@ -99,7 +99,7 @@ defmodule StrftimeTest do
     end
 
     test "format according to received custom configs" do
-      assert Strftime.format(
+      assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
                "%A %p %B %c %x %X",
                am_pm_names: {"a", "p"},

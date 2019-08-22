@@ -1,4 +1,4 @@
-defmodule Strftime do
+defmodule NimbleStrftime do
   @moduledoc """
   Library for simple datetime formatting based on the strftime format found on UNIX-like systems
 
@@ -42,7 +42,7 @@ defmodule Strftime do
   * `z` -  Time zone offset from UTC(blank if in naive time)
   * `Z` -  Time zone abbreviation(Blank if naive)
   """
-  alias Strftime.FormatOptions
+  alias NimbleStrftime.FormatOptions
 
   @doc """
     Formats received datetime into a String
