@@ -222,7 +222,7 @@ defmodule NimbleStrftime do
       |> parse(datetime, %{format_options | preferred_datetime_invoked: true})
       |> String.pad_leading(width, pad)
 
-    parse(rest, datetime, %{format_options | preferred_datetime_invoked: false}, [result | acc])
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Day of the month
@@ -323,7 +323,7 @@ defmodule NimbleStrftime do
       |> parse(datetime, %{format_options | preferred_date_invoked: true})
       |> String.pad_leading(width, pad)
 
-    parse(rest, datetime, %{format_options | preferred_date_invoked: false}, [result | acc])
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Preferred time (without date) representation
@@ -345,7 +345,7 @@ defmodule NimbleStrftime do
       |> parse(datetime, %{format_options | preferred_time_invoked: true})
       |> String.pad_leading(width, pad)
 
-    parse(rest, datetime, %{format_options | preferred_time_invoked: false}, [result | acc])
+    parse(rest, datetime, format_options, [result | acc])
   end
 
   # Year as 2-digits
