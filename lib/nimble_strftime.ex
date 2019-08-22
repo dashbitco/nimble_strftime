@@ -42,21 +42,59 @@ defmodule NimbleStrftime do
   * `z` -  Time zone offset from UTC(blank if in naive time)
   * `Z` -  Time zone abbreviation(Blank if naive)
   """
-  alias NimbleStrftime.FormatOptions
+  @default_options %{
+    preferred_date: "%Y-%m-%d",
+    preferred_time: "%H:%M:%S",
+    preferred_datetime: "%Y-%m-%d %H:%M:%S",
+    am_pm_names: {"am", "pm"},
+    month_names:
+      ~w(January February March April May June July August September October November December),
+    day_of_week_names: ~w(Monday Tuesday Wednesday Thursday Friday Saturday Sunday),
+    abbreviation_size: 3,
+    preferred_datetime_invoked: false,
+    preferred_date_invoked: false,
+    preferred_time_invoked: false
+  }
 
   @doc """
-    Formats received datetime into a String
+  Formats received datetime into a String
+
+  ## Options
+
+  * `:preferred_datetime` - a string for the preferred format to show datetimes,
+    it can't contain the `%c` format and defaults to `"%Y-%m-%d %H:%M:%S"`
+    if the option is not received
+
+  * `:preferred_date` - a string for the preferred format to show dates,
+    it can't contain the `%x` format and defaults to `"%Y-%m-%d"`
+    if the option is not received
+
+  * `:preferred_time` - a string for the preferred format to show times,
+    it can't contain the `%X` format and defaults to `"%H:%M:%S"`
+    if the option is not received
+
+  * `:am_pm_names` - a tuple for the terms to be used as `am` and `pm`, respectively
+    it defaults to `{"am", "pm"}` if the option is not received
+
+  *  `:month_names` - a list with month names in order, defaults to a list of
+    month names in english if the option is not received
+
+  * `:day_of_week_names` - a list with the name of the days in the week, defaults
+    to the name of the days of week in english if the option is not received
+
+  * `:abbreviation_size` - number of characters shown in abbreviated
+    month and week day names, if the option is not received the default of 3 is set
   """
   @spec format(
           Date.t() | Time.t() | NaiveDateTime.t() | DateTime.t(),
           String.t(),
-          FormatOptions.options()
+          list({atom(), any()})
         ) :: String.t()
-  def format(date_or_time_or_datetime, string_format, format_options \\ []) do
+  def format(date_or_time_or_datetime, string_format, user_options \\ []) do
     parse(
       string_format,
       date_or_time_or_datetime,
-      Map.merge(%FormatOptions{}, Map.new(format_options))
+      options(user_options)
     )
     |> IO.iodata_to_binary()
   end
@@ -112,11 +150,30 @@ defmodule NimbleStrftime do
   end
 
   defp am_pm(hour, format_options) when hour > 11 do
-    FormatOptions.pm_name(format_options)
+    elem(format_options.am_pm_names, 1)
   end
 
   defp am_pm(hour, format_options) when hour <= 11 do
-    FormatOptions.am_name(format_options)
+    elem(format_options.am_pm_names, 0)
+  end
+
+  defp month_name(index, format_options) when index > 0 and index < 13 do
+    Enum.at(format_options.month_names, index - 1)
+  end
+
+  defp month_name_abbreviated(index, format_options) do
+    String.slice(month_name(index, format_options), 0..(format_options.abbreviation_size - 1))
+  end
+
+  defp day_of_week_name(index, format_options) when index > 0 and index < 8 do
+    Enum.at(format_options.day_of_week_names, index - 1)
+  end
+
+  defp day_of_week_name_abbreviated(index, format_options) do
+    String.slice(
+      day_of_week_name(index, format_options),
+      0..(format_options.abbreviation_size - 1)
+    )
   end
 
   defp default_pad(format) do
@@ -169,7 +226,7 @@ defmodule NimbleStrftime do
     result =
       datetime
       |> Date.day_of_week()
-      |> FormatOptions.day_of_week_name_abbreviated(format_options)
+      |> day_of_week_name_abbreviated(format_options)
       |> String.pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -180,7 +237,7 @@ defmodule NimbleStrftime do
     result =
       datetime
       |> Date.day_of_week()
-      |> FormatOptions.day_of_week_name(format_options)
+      |> day_of_week_name(format_options)
       |> String.pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -190,7 +247,7 @@ defmodule NimbleStrftime do
   defp format_modifiers("b" <> rest, width, pad, datetime, format_options, acc) do
     result =
       datetime.month
-      |> FormatOptions.month_name_abbreviated(format_options)
+      |> month_name_abbreviated(format_options)
       |> String.pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -198,8 +255,7 @@ defmodule NimbleStrftime do
 
   # Full month name
   defp format_modifiers("B" <> rest, width, pad, datetime, format_options, acc) do
-    result =
-      datetime.month |> FormatOptions.month_name(format_options) |> String.pad_leading(width, pad)
+    result = datetime.month |> month_name(format_options) |> String.pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
   end
@@ -395,4 +451,14 @@ defmodule NimbleStrftime do
   end
 
   defp pad_preferred(result, _width, _pad), do: result
+
+  defp options(user_options) do
+    Enum.reduce(user_options, @default_options, fn {key, value}, acc ->
+      if Map.has_key?(acc, key) do
+        %{acc | key => value}
+      else
+        acc
+      end
+    end)
+  end
 end
