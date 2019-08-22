@@ -204,13 +204,25 @@ defmodule Strftime do
   end
 
   # Preferred date+time representation
+  defp convert_stream(
+         "c" <> _rest,
+         _width,
+         _pad,
+         _datetime,
+         %{preferred_datetime_invoked: true},
+         _acc
+       ) do
+    raise RuntimeError,
+          "tried to format preferred_datetime within another preferred_datetime format"
+  end
+
   defp convert_stream("c" <> rest, width, pad, datetime, format_options, acc) do
     result =
       format_options.preferred_datetime
-      |> parse(datetime, format_options)
+      |> parse(datetime, %{format_options | preferred_datetime_invoked: true})
       |> String.pad_leading(width, pad)
 
-    parse(rest, datetime, format_options, [result | acc])
+    parse(rest, datetime, %{format_options | preferred_datetime_invoked: false}, [result | acc])
   end
 
   # Day of the month
@@ -293,23 +305,47 @@ defmodule Strftime do
   end
 
   # Preferred date (without time) representation
+  defp convert_stream(
+         "x" <> _rest,
+         _width,
+         _pad,
+         _datetime,
+         %{preferred_date_invoked: true},
+         _acc
+       ) do
+    raise RuntimeError,
+          "tried to format preferred_date within another preferred_date format"
+  end
+
   defp convert_stream("x" <> rest, width, pad, datetime, format_options, acc) do
     result =
       format_options.preferred_date
-      |> parse(datetime, format_options)
+      |> parse(datetime, %{format_options | preferred_date_invoked: true})
       |> String.pad_leading(width, pad)
 
-    parse(rest, datetime, format_options, [result | acc])
+    parse(rest, datetime, %{format_options | preferred_date_invoked: false}, [result | acc])
   end
 
   # Preferred time (without date) representation
+  defp convert_stream(
+         "X" <> _rest,
+         _width,
+         _pad,
+         _datetime,
+         %{preferred_time_invoked: true},
+         _acc
+       ) do
+    raise RuntimeError,
+          "tried to format preferred_time within another preferred_time format"
+  end
+
   defp convert_stream("X" <> rest, width, pad, datetime, format_options, acc) do
     result =
       format_options.preferred_time
-      |> parse(datetime, format_options)
+      |> parse(datetime, %{format_options | preferred_time_invoked: true})
       |> String.pad_leading(width, pad)
 
-    parse(rest, datetime, format_options, [result | acc])
+    parse(rest, datetime, %{format_options | preferred_time_invoked: false}, [result | acc])
   end
 
   # Year as 2-digits

@@ -29,6 +29,41 @@ defmodule StrftimeTest do
       end)
     end
 
+    test "raise error when the preferred_datetime calls itself" do
+      assert_raise(RuntimeError, fn ->
+        Strftime.format(~N[2019-08-20 15:47:34.001], "%c", preferred_datetime: "%c")
+      end)
+    end
+
+    test "raise error when the preferred_date calls itself" do
+      assert_raise(RuntimeError, fn ->
+        Strftime.format(~N[2019-08-20 15:47:34.001], "%x", preferred_date: "%x")
+      end)
+    end
+
+    test "raise error when the preferred_time calls itself" do
+      assert_raise(RuntimeError, fn ->
+        Strftime.format(~N[2019-08-20 15:47:34.001], "%X", preferred_time: "%X")
+      end)
+    end
+
+    test "raise error when the preferred formats create a circular chain" do
+      assert_raise(RuntimeError, fn ->
+        Strftime.format(~N[2019-08-20 15:47:34.001], "%c",
+          preferred_datetime: "%x",
+          preferred_date: "%X",
+          preferred_time: "%c"
+        )
+      end)
+    end
+
+    test "format with no errors is the preferred formats are included multiple times on the same string" do
+      assert(
+        Strftime.format(~N[2019-08-15 17:07:57.001], "%c %c %x %x %X %X") ==
+          "2019-08-15 17:07:57 2019-08-15 17:07:57 2019-08-15 2019-08-15 17:07:57 17:07:57"
+      )
+    end
+
     test "return `hour:minute:seconds PM` when receiving `%I:%M:%S %p`" do
       assert Strftime.format(~U[2019-08-15 17:07:57.001Z], "%I:%M:%S %p") == "05:07:57 PM"
     end

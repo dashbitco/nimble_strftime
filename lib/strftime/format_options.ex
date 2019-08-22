@@ -14,7 +14,10 @@ defmodule Strftime.FormatOptions do
           am_pm_names: {String.t(), String.t()},
           month_names: list(String.t()),
           day_of_week_names: list(String.t()),
-          abbreviation_size: integer()
+          abbreviation_size: integer(),
+          preferred_datetime_invoked: true | false,
+          preferred_date_invoked: true | false,
+          preferred_time_invoked: true | false
         }
   defstruct preferred_date: "%Y-%m-%d",
             preferred_time: "%H:%M:%S",
@@ -23,7 +26,10 @@ defmodule Strftime.FormatOptions do
             month_names:
               ~w(January February March April May June July August September October November December),
             day_of_week_names: ~w(Monday Tuesday Wednesday Thursday Friday Saturday Sunday),
-            abbreviation_size: 3
+            abbreviation_size: 3,
+            preferred_datetime_invoked: false,
+            preferred_date_invoked: false,
+            preferred_time_invoked: false
 
   @typedoc "Accepted configuration options to be used by Strftime"
   @type options :: [option]
