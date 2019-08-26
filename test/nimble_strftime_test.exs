@@ -86,6 +86,18 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(datetime_with_zone, "%z %Z") == "+0300 EEST"
     end
 
+    test "format AM and PM correctly on the %P and %p options" do
+      am_time_almost_pm = ~U[2019-08-26 11:59:59.001Z]
+      pm_time = ~U[2019-08-26 12:00:57.001Z]
+      pm_time_almost_am = ~U[2019-08-26 23:59:57.001Z]
+      am_time = ~U[2019-08-26 00:00:01.001Z]
+
+      assert NimbleStrftime.format(am_time_almost_pm, "%P %p") == "am AM"
+      assert NimbleStrftime.format(pm_time, "%P %p") == "pm PM"
+      assert NimbleStrftime.format(pm_time_almost_am, "%P %p") == "pm PM"
+      assert NimbleStrftime.format(am_time, "%P %p") == "am AM"
+    end
+
     test "return the formatted datetime when all format options and modifiers are received" do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
