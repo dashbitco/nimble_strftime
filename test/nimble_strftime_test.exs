@@ -98,6 +98,24 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(am_time, "%P %p") == "am AM"
     end
 
+    test "format all weekdays correctly with %A and %a options" do
+      sunday = ~U[2019-08-25 11:59:59.001Z]
+      monday = ~U[2019-08-26 11:59:59.001Z]
+      tuesday = ~U[2019-08-27 11:59:59.001Z]
+      wednesday = ~U[2019-08-28 11:59:59.001Z]
+      thursday = ~U[2019-08-29 11:59:59.001Z]
+      friday = ~U[2019-08-30 11:59:59.001Z]
+      satruday = ~U[2019-08-31 11:59:59.001Z]
+
+      assert NimbleStrftime.format(sunday, "%A %a") == "Sunday Sun"
+      assert NimbleStrftime.format(monday, "%A %a") == "Monday Mon"
+      assert NimbleStrftime.format(tuesday, "%A %a") == "Tuesday Tue"
+      assert NimbleStrftime.format(wednesday, "%A %a") == "Wednesday Wed"
+      assert NimbleStrftime.format(thursday, "%A %a") == "Thursday Thu"
+      assert NimbleStrftime.format(friday, "%A %a") == "Friday Fri"
+      assert NimbleStrftime.format(satruday, "%A %a") == "Saturday Sat"
+    end
+
     test "return the formatted datetime when all format options and modifiers are received" do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
