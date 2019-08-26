@@ -64,10 +64,6 @@ defmodule NimbleStrftimeTest do
       )
     end
 
-    test "return `hour:minute:seconds PM` when receiving `%I:%M:%S %p`" do
-      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.001Z], "%I:%M:%S %p") == "05:07:57 PM"
-    end
-
     test "ignore width when receiving the `-` padding option" do
       assert NimbleStrftime.format(~T[17:07:57.001], "%-999M") == "7"
     end
