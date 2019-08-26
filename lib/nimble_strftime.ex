@@ -314,7 +314,13 @@ defmodule NimbleStrftime do
   # Microseconds
   defp format_modifiers("f" <> rest, _width, _pad, datetime, format_options, acc) do
     {microsecond, precision} = datetime.microsecond
-    result = microsecond |> Integer.to_string() |> String.pad_leading(6, "0") |> binary_part(0, max(precision, 1))
+
+    result =
+      microsecond
+      |> Integer.to_string()
+      |> String.pad_leading(6, "0")
+      |> binary_part(0, max(precision, 1))
+
     parse(rest, datetime, format_options, [result | acc])
   end
 
