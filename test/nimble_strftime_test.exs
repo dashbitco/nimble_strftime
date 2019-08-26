@@ -105,7 +105,7 @@ defmodule NimbleStrftimeTest do
       wednesday = ~U[2019-08-28 11:59:59.001Z]
       thursday = ~U[2019-08-29 11:59:59.001Z]
       friday = ~U[2019-08-30 11:59:59.001Z]
-      satruday = ~U[2019-08-31 11:59:59.001Z]
+      saturday = ~U[2019-08-31 11:59:59.001Z]
 
       assert NimbleStrftime.format(sunday, "%A %a") == "Sunday Sun"
       assert NimbleStrftime.format(monday, "%A %a") == "Monday Mon"
@@ -113,7 +113,7 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(wednesday, "%A %a") == "Wednesday Wed"
       assert NimbleStrftime.format(thursday, "%A %a") == "Thursday Thu"
       assert NimbleStrftime.format(friday, "%A %a") == "Friday Fri"
-      assert NimbleStrftime.format(satruday, "%A %a") == "Saturday Sat"
+      assert NimbleStrftime.format(saturday, "%A %a") == "Saturday Sat"
     end
 
     test "format all months correctly with the %B and %b options" do
