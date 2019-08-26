@@ -34,7 +34,7 @@ defmodule NimbleStrftime do
   B      | Full month name                                                         | January
   c      | Preferred date+time representation                                      | 2018-10-17 12:34:56
   d      | Day of the month                                                        | 01, 12
-  f      | Microseconds                                                            | 000000, 999999, 0123
+  f      | Microseconds *(does not support width and padding modifiers)*           | 000000, 999999, 0123
   H      | Hour using a 24-hour clock                                              | 00, 23
   I      | Hour using a 12-hour clock                                              | 01, 12
   j      | Day of the year                                                         | 001, 366
@@ -312,8 +312,15 @@ defmodule NimbleStrftime do
   end
 
   # Microseconds
-  defp format_modifiers("f" <> rest, width, pad, datetime, format_options, acc) do
-    result = datetime.microsecond |> elem(0) |> Integer.to_string() |> pad_leading(width, pad)
+  defp format_modifiers("f" <> rest, _width, _pad, datetime, format_options, acc) do
+    {microsecond, precision} = datetime.microsecond
+
+    result =
+      microsecond
+      |> Integer.to_string()
+      |> String.pad_leading(6, "0")
+      |> binary_part(0, max(precision, 1))
+
     parse(rest, datetime, format_options, [result | acc])
   end
 

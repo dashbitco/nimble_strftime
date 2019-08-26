@@ -131,12 +131,42 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(%{month: 12}, "%B %b") == "December Dec"
     end
 
+    test "microseconds format ignores padding and width options" do
+      datetime = ~U[2019-08-15 17:07:57.001234Z]
+      assert NimbleStrftime.format(datetime, "%f") == "001234"
+      assert NimbleStrftime.format(datetime, "%f") == NimbleStrftime.format(datetime, "%_20f")
+      assert NimbleStrftime.format(datetime, "%f") == NimbleStrftime.format(datetime, "%020f")
+      assert NimbleStrftime.format(datetime, "%f") == NimbleStrftime.format(datetime, "%-f")
+    end
+
+    test "microseconds format formats properly dates with different precisions" do
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.5Z], "%f") == "5"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.45Z], "%f") == "45"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.345Z], "%f") == "345"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.2345Z], "%f") == "2345"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.12345Z], "%f") == "12345"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.012345Z], "%f") == "012345"
+    end
+
+    test "microseconds formats properly different precisions of zero" do
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.0], "%f") == "0"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.00], "%f") == "00"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.000], "%f") == "000"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.0000], "%f") == "0000"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.00000], "%f") == "00000"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.000000], "%f") == "000000"
+    end
+
+    test "microseconds returns a single zero if there's no precision at all" do
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57], "%f") == "0"
+    end
+
     test "return the formatted datetime when all format options and modifiers are received" do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
                "%04% %a %A %b %B %-3c %d %f %H %I %j %m %_5M %p %P %q %S %u %x %X %y %Y %z %Z"
              ) ==
-               "000% Thu Thursday Aug August 2019-08-15 17:07:57 15 1000 17 05 227 08     7 PM pm 3 57 04 2019-08-15 17:07:57 19 2019 +0000 UTC"
+               "000% Thu Thursday Aug August 2019-08-15 17:07:57 15 001 17 05 227 08     7 PM pm 3 57 04 2019-08-15 17:07:57 19 2019 +0000 UTC"
     end
 
     test "format according to received custom configs" do
