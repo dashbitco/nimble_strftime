@@ -108,7 +108,9 @@ defmodule NimbleStrftime do
       month and week day names, if the option is not received the default of 3 is set
 
   ## Examples
-    Without options:
+
+  Without options:
+
       iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%y-%m-%d %I:%M:%S %p")
       "19-08-26 01:52:06 PM"
 
@@ -118,7 +120,7 @@ defmodule NimbleStrftime do
       iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%c")
       "2019-08-26 13:52:06"
 
-    With options:
+  With options:
 
       iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%c", preferred_datetime: "%H:%M:%S %d-%m-%y")
       "13:52:06 26-08-19"
