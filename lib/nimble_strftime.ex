@@ -26,32 +26,34 @@ defmodule NimbleStrftime do
 
   The accepted formats are:
 
-    * `%` -  Literally just the `%` char
-    * `a` -  Abbreviated name of the day
-    * `A` -  Name of the day
-    * `b` -  Abbreviated name of the month
-    * `B` -  Name of the month
-    * `c` -  Preferred datetime representation
-    * `d` -  Day of the month
-    * `f` -  Microseconds
-    * `H` -  Hour in Military Time(24 hours)
-    * `I` -  Hour in Regular Time(12 hours)
-    * `j` -  Day of the year
-    * `m` -  Month
-    * `M` -  Minute
-    * `p` -  Period of the day("AM" and "PM") in uppercase
-    * `P` -  Period of the day("am" and "pm") in lowercase
-    * `q` -  Quarter of the year
-    * `S` -  Second
-    * `u` -  Day of the week
-    * `x` -  Preferred date
-    * `X` -  Preferred time
-    * `y` -  Year in two digits
-    * `Y` -  Year
-    * `z` -  Time zone offset from UTC (blank if time zone data is missing)
-    * `Z` -  Time zone abbreviation (blank if time zone data is missing)
+  Format | Description                                                             | Examples (in ISO)
+  :----- | :-----------------------------------------------------------------------| :------------------------
+  a      | Abbreviated name of day                                                 | Mon
+  A      | Full name of day                                                        | Monday
+  b      | Abbreviated month name                                                  | Jan
+  B      | Full month name                                                         | January
+  c      | Preferred date+time representation                                      | 2018-10-17 12:34:56
+  d      | Day of the month                                                        | 01, 12
+  f      | Microseconds                                                            | 000000, 999999, 0123
+  H      | Hour using a 24-hour clock                                              | 00, 23
+  I      | Hour using a 12-hour clock                                              | 01, 12
+  j      | Day of the year                                                         | 001, 366
+  m      | Month                                                                   | 01, 12
+  M      | Minute                                                                  | 00, 59
+  p      | "AM" or "PM" (noon is "PM", midnight as "AM")                           | AM, PM
+  P      | "am" or "pm" (noon is "pm", midnight as "am")                           | am, pm
+  q      | Quarter                                                                 | 1, 2, 3, 4
+  S      | Second                                                                  | 00, 59, 60
+  u      | Day of the week                                                         | 01 (monday), 07 (sunday)
+  x      | Preferred date (without time) representation                            | 2018-10-17
+  X      | Preferred time (without date) representation                            | 12:34:56
+  y      | Year as 2-digits                                                        | 01, 01, 86, 18
+  Y      | Year                                                                    | -0001, 0001, 1986
+  z      | +hhmm/-hhmm time zone offset from UTC (empty string if naive)           | +0300, -0530
+  Z      | Time zone abbreviation (empty string if naive)                          | CET, BRST
+  %      | Literal "%" character                                                   | %
 
-  Any other character will be interpreted literally and won't be formatted.
+  Any other character will be interpreted as an invalid format and raise an error
   """
 
   @default_options %{
@@ -105,6 +107,46 @@ defmodule NimbleStrftime do
     * `:abbreviation_size` - number of characters shown in abbreviated
       month and week day names, if the option is not received the default of 3 is set
 
+  ## Examples
+
+  Without options:
+
+      iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%y-%m-%d %I:%M:%S %p")
+      "19-08-26 01:52:06 PM"
+
+      iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%a, %B %d %Y")
+      "Mon, August 26 2019"
+
+      iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%c")
+      "2019-08-26 13:52:06"
+
+  With options:
+
+      iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%c", preferred_datetime: "%H:%M:%S %d-%m-%y")
+      "13:52:06 26-08-19"
+
+      iex> NimbleStrftime.format(
+      ...>  ~U[2019-08-26 13:52:06.0Z],
+      ...>  "%A",
+      ...>  day_of_week_names: ~w(
+      ...>    segunda-feira terça-feira
+      ...>    quarta-feira quinta-feira
+      ...>    sexta-feira sábado domingo
+      ...>  )
+      ...>)
+      "segunda-feira"
+
+      iex> NimbleStrftime.format(
+      ...>  ~U[2019-08-26 13:52:06.0Z],
+      ...>  "%B",
+      ...>  month_names: ~w(
+      ...>    январь февраль март
+      ...>    апрель май июнь
+      ...>    июль август сентябрь
+      ...>    октябрь ноябрь декабрь
+      ...>  )
+      ...>)
+      "август"
   """
   @spec format(map(), String.t(), list({atom(), any()})) :: String.t()
   def format(date_or_time_or_datetime, string_format, user_options \\ []) do
