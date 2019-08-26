@@ -86,6 +86,51 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(datetime_with_zone, "%z %Z") == "+0300 EEST"
     end
 
+    test "format AM and PM correctly on the %P and %p options" do
+      am_time_almost_pm = ~U[2019-08-26 11:59:59.001Z]
+      pm_time = ~U[2019-08-26 12:00:57.001Z]
+      pm_time_almost_am = ~U[2019-08-26 23:59:57.001Z]
+      am_time = ~U[2019-08-26 00:00:01.001Z]
+
+      assert NimbleStrftime.format(am_time_almost_pm, "%P %p") == "am AM"
+      assert NimbleStrftime.format(pm_time, "%P %p") == "pm PM"
+      assert NimbleStrftime.format(pm_time_almost_am, "%P %p") == "pm PM"
+      assert NimbleStrftime.format(am_time, "%P %p") == "am AM"
+    end
+
+    test "format all weekdays correctly with %A and %a options" do
+      sunday = ~U[2019-08-25 11:59:59.001Z]
+      monday = ~U[2019-08-26 11:59:59.001Z]
+      tuesday = ~U[2019-08-27 11:59:59.001Z]
+      wednesday = ~U[2019-08-28 11:59:59.001Z]
+      thursday = ~U[2019-08-29 11:59:59.001Z]
+      friday = ~U[2019-08-30 11:59:59.001Z]
+      satruday = ~U[2019-08-31 11:59:59.001Z]
+
+      assert NimbleStrftime.format(sunday, "%A %a") == "Sunday Sun"
+      assert NimbleStrftime.format(monday, "%A %a") == "Monday Mon"
+      assert NimbleStrftime.format(tuesday, "%A %a") == "Tuesday Tue"
+      assert NimbleStrftime.format(wednesday, "%A %a") == "Wednesday Wed"
+      assert NimbleStrftime.format(thursday, "%A %a") == "Thursday Thu"
+      assert NimbleStrftime.format(friday, "%A %a") == "Friday Fri"
+      assert NimbleStrftime.format(satruday, "%A %a") == "Saturday Sat"
+    end
+
+    test "format all months correctly with the %B and %b options" do
+      assert NimbleStrftime.format(%{month: 1}, "%B %b") == "January Jan"
+      assert NimbleStrftime.format(%{month: 2}, "%B %b") == "February Feb"
+      assert NimbleStrftime.format(%{month: 3}, "%B %b") == "March Mar"
+      assert NimbleStrftime.format(%{month: 4}, "%B %b") == "April Apr"
+      assert NimbleStrftime.format(%{month: 5}, "%B %b") == "May May"
+      assert NimbleStrftime.format(%{month: 6}, "%B %b") == "June Jun"
+      assert NimbleStrftime.format(%{month: 7}, "%B %b") == "July Jul"
+      assert NimbleStrftime.format(%{month: 8}, "%B %b") == "August Aug"
+      assert NimbleStrftime.format(%{month: 9}, "%B %b") == "September Sep"
+      assert NimbleStrftime.format(%{month: 10}, "%B %b") == "October Oct"
+      assert NimbleStrftime.format(%{month: 11}, "%B %b") == "November Nov"
+      assert NimbleStrftime.format(%{month: 12}, "%B %b") == "December Dec"
+    end
+
     test "return the formatted datetime when all format options and modifiers are received" do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
