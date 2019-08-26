@@ -107,6 +107,44 @@ defmodule NimbleStrftime do
     * `:abbreviation_size` - number of characters shown in abbreviated
       month and week day names, if the option is not received the default of 3 is set
 
+  ## Examples
+    without any options:
+      iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%y-%m-%d %I:%M:%S %p")
+      "19-08-26 01:52:06 PM"
+
+      iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%a, %B %d %Y")
+      "Mon, August 26 2019"
+
+      iex> NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%c")
+      "2019-08-26 13:52:06"
+
+    With options:
+
+      NimbleStrftime.format(~U[2019-08-26 13:52:06.0Z], "%c", preferred_datetime: "%H:%M:%S %d-%m-%y")
+      "13:52:06 26-08-19"
+
+      iex> NimbleStrftime.format(
+      ...>  ~U[2019-08-26 13:52:06.0Z],
+      ...>  "%A",
+      ...>  day_of_week_names: ~w(
+      ...>    segunda-feira terça-feira
+      ...>    quarta-feira quinta-feira
+      ...>    sexta-feira sábado domingo
+      ...>  )
+      ...>)
+      "segunda-feira"
+
+      iex> NimbleStrftime.format(
+      ...>  ~U[2019-08-26 13:52:06.0Z],
+      ...>  "%B",
+      ...>  month_names: ~w(
+      ...>    январь февраль март
+      ...>    апрель май июнь
+      ...>    июль август сентябрь
+      ...>    октябрь ноябрь декабрь
+      ...>  )
+      ...>)
+      "август"
   """
   @spec format(map(), String.t(), list({atom(), any()})) :: String.t()
   def format(date_or_time_or_datetime, string_format, user_options \\ []) do
