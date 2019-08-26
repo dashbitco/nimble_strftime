@@ -139,6 +139,28 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(datetime, "%f") == NimbleStrftime.format(datetime, "%-f")
     end
 
+    test "microseconds format formats properly dates with different precisions" do
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.5Z], "%f") == "5"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.45Z], "%f") == "45"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.345Z], "%f") == "345"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.2345Z], "%f") == "2345"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.12345Z], "%f") == "12345"
+      assert NimbleStrftime.format(~U[2019-08-15 17:07:57.012345Z], "%f") == "012345"
+    end
+
+    test "microseconds formats properly different precisions of zero" do
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.0], "%f") == "0"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.00], "%f") == "00"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.000], "%f") == "000"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.0000], "%f") == "0000"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.00000], "%f") == "00000"
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57.000000], "%f") == "000000"
+    end
+
+    test "microseconds returns a single zero if there's no precision at all" do
+      assert NimbleStrftime.format(~N[2019-08-15 17:07:57], "%f") == "0"
+    end
+
     test "return the formatted datetime when all format options and modifiers are received" do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
