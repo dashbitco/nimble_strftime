@@ -1,13 +1,32 @@
 defmodule NimbleStrftime.MixProject do
   use Mix.Project
+  @version "0.1.0"
 
   def project do
     [
       app: :nimble_strftime,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.9",
-      deps: deps()
+      deps: deps(),
+      docs: docs(),
+      package: package()
     ]
+  end
+
+  defp docs do
+    [
+      main: "NimbleStrftime",
+      source_ref: "v#{@version}",
+      source_url: "https://github.com/plataformatec/nimble_strftime"
+    ]
+  end
+
+  defp package do
+    %{
+      licenses: ["Apache 2"],
+      maintainers: ["Gustavo Santos Ferreira", "José Valim"],
+      links: %{"GitHub" => "https://github.com/plataformatec/nimble_strftime"}
+    }
   end
 
   defp deps do
