@@ -86,6 +86,13 @@ def deps do
 end
 ```
 
+## Nimble*
+
+Other nimble libraries by Plataformatec:
+
+  * [NimbleParsec](https://github.com/plataformatec/nimble_parsec) - simple and fast parser combinators
+  * [NimbleCSV](https://github.com/plataformatec/nimble_csv) - simple and fast CSV parsing
+
 # License
 Copyright 2019 Plataformatec
 
