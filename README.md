@@ -37,15 +37,11 @@ iex> NimbleStrftime.format(datetime, "%c", preferred_datetime: "%H:%M:%S %d-%m-%
 iex> NimbleStrftime.format(
 ...>  datetime,
 ...>  "%A",
-...>  day_of_week_names: ~w(
-...>    segunda-feira
-...>    terça-feira
-...>    quarta-feira
-...>    quinta-feira
-...>    sexta-feira
-...>    sábado
-...>    domingo
-...>  )
+...>  day_of_week_names: fn index ->
+...>    {"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
+...>    "sexta-feira", "sábado", "domingo"}
+...>    |> elem(index - 1)
+...>  end
 ...>)
 "segunda-feira"
 
@@ -54,20 +50,11 @@ iex> NimbleStrftime.format(
 ...>  datetime,
 ...>  "%B",
 ...>  abbreviation_size: 2,
-...>  month_names: ~w(
-...>    январь
-...>    февраль
-...>    март
-...>    апрель
-...>    май
-...>    июнь
-...>    июль
-...>    август
-...>    сентябрь
-...>    октябрь
-...>    ноябрь
-...>    декабрь
-...>  )
+...>  month_names: fn index ->
+...>    {"январь", "февраль", "март", "апрель", "май", "июнь",
+...>    "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"}
+...>    |> elem(index - 1)
+...>  end
 ...>)
 # => "ав"
 ```
