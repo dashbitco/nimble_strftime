@@ -81,14 +81,17 @@ defmodule NimbleStrftime do
       it can't contain the `%X` format and defaults to `"%H:%M:%S"`
       if the option is not received
 
-    * `:am_pm_names` - a tuple for the terms to be used as `am` and `pm`, respectively
-      it defaults to `{"am", "pm"}` if the option is not received
+    * `:am_pm_names` - a function that receives either `:am` or `:pm` and returns
+      the name of the period of the day, if the option is not received it defaults
+      to a function that returns `"am"` and `"pm"`, respectively
 
-    *  `:month_names` - a list with month names in order, defaults to a list of
-      month names in english if the option is not received
+    *  `:month_names` - a function that receives a number and returns the name of
+      the corresponding month, if the option is not received it defaults to a
+      function thet returns the month names in english
 
-    * `:day_of_week_names` - a list with the name of the days in the week, defaults
-      to the name of the days of week in english if the option is not received
+    * `:day_of_week_names` - a function that receives a number and returns the name of
+      the corresponding day of week, if the option is not received it defaults to a
+      function that returns the day of week names in english
 
     * `:abbreviation_size` - number of characters shown in abbreviated
       month and week day names, if the option is not received the default of 3 is set
