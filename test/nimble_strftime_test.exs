@@ -173,11 +173,20 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
                "%A %p %B %c %x %X",
-               am_pm_names: {"a", "p"},
-               month_names:
-                 ~w(Janeiro Fevereiro Março Abril Maio Junho Julho Agosto Setembro Outubro Novembro Dezembro),
-               day_of_week_names:
-                 ~w(понедельник вторник среда четверг пятница суббота воскресенье),
+               am_pm_names: fn
+                 :am -> "a"
+                 :pm -> "p"
+               end,
+               month_names: fn index ->
+                 {"Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto",
+                  "Setembro", "Outubro", "Novembro", "Dezembro"}
+                 |> elem(index - 1)
+               end,
+               day_of_week_names: fn index ->
+                 {"понедельник", "вторник", "среда", "четверг", "пятница", "суббота",
+                  "воскресенье"}
+                 |> elem(index - 1)
+               end,
                preferred_date: "%05Y-%m-%d",
                preferred_time: "%M:%_3H%S",
                preferred_datetime: "%%"

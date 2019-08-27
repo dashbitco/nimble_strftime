@@ -56,20 +56,6 @@ defmodule NimbleStrftime do
   Any other character will be interpreted as an invalid format and raise an error
   """
 
-  @default_options %{
-    preferred_date: "%Y-%m-%d",
-    preferred_time: "%H:%M:%S",
-    preferred_datetime: "%Y-%m-%d %H:%M:%S",
-    am_pm_names: {"am", "pm"},
-    month_names:
-      ~w(January February March April May June July August September October November December),
-    day_of_week_names: ~w(Monday Tuesday Wednesday Thursday Friday Saturday Sunday),
-    abbreviation_size: 3,
-    preferred_datetime_invoked: false,
-    preferred_date_invoked: false,
-    preferred_time_invoked: false
-  }
-
   @doc """
   Formats received datetime into a string.
 
@@ -128,23 +114,22 @@ defmodule NimbleStrftime do
       iex> NimbleStrftime.format(
       ...>  ~U[2019-08-26 13:52:06.0Z],
       ...>  "%A",
-      ...>  day_of_week_names: ~w(
-      ...>    segunda-feira terça-feira
-      ...>    quarta-feira quinta-feira
-      ...>    sexta-feira sábado domingo
-      ...>  )
+      ...>  day_of_week_names: fn index ->
+      ...>    {"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
+      ...>    "sexta-feira", "sábado", "domingo"}
+      ...>    |> elem(index - 1)
+      ...>  end
       ...>)
       "segunda-feira"
 
       iex> NimbleStrftime.format(
       ...>  ~U[2019-08-26 13:52:06.0Z],
       ...>  "%B",
-      ...>  month_names: ~w(
-      ...>    январь февраль март
-      ...>    апрель май июнь
-      ...>    июль август сентябрь
-      ...>    октябрь ноябрь декабрь
-      ...>  )
+      ...>  month_names: fn index ->
+      ...>    {"январь", "февраль", "март", "апрель", "май", "июнь",
+      ...>    "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"}
+      ...>    |> elem(index - 1)
+      ...>  end
       ...>)
       "август"
   """
@@ -205,28 +190,20 @@ defmodule NimbleStrftime do
   end
 
   defp am_pm(hour, format_options) when hour > 11 do
-    elem(format_options.am_pm_names, 1)
+    format_options.am_pm_names.(:pm)
   end
 
   defp am_pm(hour, format_options) when hour <= 11 do
-    elem(format_options.am_pm_names, 0)
-  end
-
-  defp month_name(index, format_options) when index > 0 and index < 13 do
-    Enum.fetch!(format_options.month_names, index - 1)
+    format_options.am_pm_names.(:am)
   end
 
   defp month_name_abbreviated(index, format_options) do
-    String.slice(month_name(index, format_options), 0..(format_options.abbreviation_size - 1))
-  end
-
-  defp day_of_week_name(index, format_options) when index > 0 and index < 8 do
-    Enum.fetch!(format_options.day_of_week_names, index - 1)
+    String.slice(format_options.month_names.(index), 0..(format_options.abbreviation_size - 1))
   end
 
   defp day_of_week_name_abbreviated(index, format_options) do
     String.slice(
-      day_of_week_name(index, format_options),
+      format_options.day_of_week_names.(index),
       0..(format_options.abbreviation_size - 1)
     )
   end
@@ -260,7 +237,7 @@ defmodule NimbleStrftime do
     result =
       datetime
       |> Date.day_of_week()
-      |> day_of_week_name(format_options)
+      |> format_options.day_of_week_names.()
       |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -278,7 +255,7 @@ defmodule NimbleStrftime do
 
   # Full month name
   defp format_modifiers("B" <> rest, width, pad, datetime, format_options, acc) do
-    result = datetime.month |> month_name(format_options) |> pad_leading(width, pad)
+    result = datetime.month |> format_options.month_names.() |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
   end
@@ -492,7 +469,30 @@ defmodule NimbleStrftime do
     do: do_pad_leading(count - 1, padding, [padding | acc])
 
   defp options(user_options) do
-    Enum.reduce(user_options, @default_options, fn {key, value}, acc ->
+    default_options = %{
+      preferred_date: "%Y-%m-%d",
+      preferred_time: "%H:%M:%S",
+      preferred_datetime: "%Y-%m-%d %H:%M:%S",
+      am_pm_names: fn
+        :am -> "am"
+        :pm -> "pm"
+      end,
+      month_names: fn index ->
+        {"January", "February", "March", "April", "May", "June", "July", "August", "September",
+         "October", "November", "December"}
+        |> elem(index - 1)
+      end,
+      day_of_week_names: fn index ->
+        {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
+        |> elem(index - 1)
+      end,
+      abbreviation_size: 3,
+      preferred_datetime_invoked: false,
+      preferred_date_invoked: false,
+      preferred_time_invoked: false
+    }
+
+    Enum.reduce(user_options, default_options, fn {key, value}, acc ->
       if Map.has_key?(acc, key) do
         %{acc | key => value}
       else
