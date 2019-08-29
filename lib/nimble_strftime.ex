@@ -81,15 +81,15 @@ defmodule NimbleStrftime do
       it can't contain the `%X` format and defaults to `"%H:%M:%S"`
       if the option is not received
 
-    * `:am_pm` - a function that receives either `:am` or `:pm` and returns
+    * `:am_pm_names` - a function that receives either `:am` or `:pm` and returns
       the name of the period of the day, if the option is not received it defaults
       to a function that returns `"am"` and `"pm"`, respectively
 
-    *  `:month` - a function that receives a number and returns the name of
+    *  `:month_names` - a function that receives a number and returns the name of
       the corresponding month, if the option is not received it defaults to a
       function thet returns the month names in english
 
-    * `:day_of_week` - a function that receives a number and returns the name of
+    * `:day_of_week_names` - a function that receives a number and returns the name of
       the corresponding day of week, if the option is not received it defaults to a
       function that returns the day of week names in english
 
@@ -117,10 +117,10 @@ defmodule NimbleStrftime do
       iex> NimbleStrftime.format(
       ...>  ~U[2019-08-26 13:52:06.0Z],
       ...>  "%A",
-      ...>  day_of_week: fn index ->
+      ...>  day_of_week_names: fn day_of_week ->
       ...>    {"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
       ...>    "sexta-feira", "sábado", "domingo"}
-      ...>    |> elem(index - 1)
+      ...>    |> elem(day_of_week - 1)
       ...>  end
       ...>)
       "segunda-feira"
@@ -128,10 +128,10 @@ defmodule NimbleStrftime do
       iex> NimbleStrftime.format(
       ...>  ~U[2019-08-26 13:52:06.0Z],
       ...>  "%B",
-      ...>  month: fn index ->
+      ...>  month_names: fn month ->
       ...>    {"январь", "февраль", "март", "апрель", "май", "июнь",
       ...>    "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"}
-      ...>    |> elem(index - 1)
+      ...>    |> elem(month - 1)
       ...>  end
       ...>)
       "август"
@@ -193,20 +193,20 @@ defmodule NimbleStrftime do
   end
 
   defp am_pm(hour, format_options) when hour > 11 do
-    format_options.am_pm.(:pm)
+    format_options.am_pm_names.(:pm)
   end
 
   defp am_pm(hour, format_options) when hour <= 11 do
-    format_options.am_pm.(:am)
+    format_options.am_pm_names.(:am)
   end
 
-  defp month_name_abbreviated(index, format_options) do
-    String.slice(format_options.month.(index), 0..(format_options.abbreviation_size - 1))
+  defp month_name_abbreviated(month, format_options) do
+    String.slice(format_options.month_names.(month), 0..(format_options.abbreviation_size - 1))
   end
 
-  defp day_of_week_name_abbreviated(index, format_options) do
+  defp day_of_week_name_abbreviated(day_of_week, format_options) do
     String.slice(
-      format_options.day_of_week.(index),
+      format_options.day_of_week_names.(day_of_week),
       0..(format_options.abbreviation_size - 1)
     )
   end
@@ -240,7 +240,7 @@ defmodule NimbleStrftime do
     result =
       datetime
       |> Date.day_of_week()
-      |> format_options.day_of_week.()
+      |> format_options.day_of_week_names.()
       |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -258,7 +258,7 @@ defmodule NimbleStrftime do
 
   # Full month name
   defp format_modifiers("B" <> rest, width, pad, datetime, format_options, acc) do
-    result = datetime.month |> format_options.month.() |> pad_leading(width, pad)
+    result = datetime.month |> format_options.month_names.() |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
   end
@@ -476,18 +476,18 @@ defmodule NimbleStrftime do
       preferred_date: "%Y-%m-%d",
       preferred_time: "%H:%M:%S",
       preferred_datetime: "%Y-%m-%d %H:%M:%S",
-      am_pm: fn
+      am_pm_names: fn
         :am -> "am"
         :pm -> "pm"
       end,
-      month: fn index ->
+      month_names: fn month ->
         {"January", "February", "March", "April", "May", "June", "July", "August", "September",
          "October", "November", "December"}
-        |> elem(index - 1)
+        |> elem(month - 1)
       end,
-      day_of_week: fn index ->
+      day_of_week_names: fn day_of_week ->
         {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
-        |> elem(index - 1)
+        |> elem(day_of_week - 1)
       end,
       abbreviation_size: 3,
       preferred_datetime_invoked: false,
