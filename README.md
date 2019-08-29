@@ -49,14 +49,13 @@ iex> NimbleStrftime.format(
 iex> NimbleStrftime.format(
 ...>  datetime,
 ...>  "%B",
-...>  abbreviation_size: 2,
-...>  month_names: fn month ->
-...>    {"январь", "февраль", "март", "апрель", "май", "июнь",
-...>    "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"}
+...>  abbreviated_month_names: fn month ->
+...>    {"янв", "февр", "март", "апр", "май", "июнь",
+...>    "июль", "авг", "сент", "окт", "нояб", "дек"}
 ...>    |> elem(index - 1)
 ...>  end
 ...>)
-# => "ав"
+# => "авг"
 ```
 
 ## Installation

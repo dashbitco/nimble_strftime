@@ -172,7 +172,7 @@ defmodule NimbleStrftimeTest do
     test "format according to received custom configs" do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
-               "%A %p %B %c %x %X",
+               "%A %a %p %B %b %c %x %X",
                am_pm_names: fn
                  :am -> "a"
                  :pm -> "p"
@@ -187,10 +187,19 @@ defmodule NimbleStrftimeTest do
                   "воскресенье"}
                  |> elem(day_of_week - 1)
                end,
+               abbreviated_month_names: fn month ->
+                 {"Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov",
+                  "Dez"}
+                 |> elem(month - 1)
+               end,
+               abbreviated_day_of_week_names: fn day_of_week ->
+                 {"ПНД", "ВТР", "СРД", "ЧТВ", "ПТН", "СБТ", "ВСК"}
+                 |> elem(day_of_week - 1)
+               end,
                preferred_date: "%05Y-%m-%d",
                preferred_time: "%M:%_3H%S",
                preferred_datetime: "%%"
-             ) == "четверг P Agosto % 02019-08-15 07: 1757"
+             ) == "четверг ЧТВ P Agosto Ago % 02019-08-15 07: 1757"
     end
   end
 end
