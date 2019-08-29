@@ -56,20 +56,6 @@ defmodule NimbleStrftime do
   Any other character will be interpreted as an invalid format and raise an error
   """
 
-  @default_options %{
-    preferred_date: "%Y-%m-%d",
-    preferred_time: "%H:%M:%S",
-    preferred_datetime: "%Y-%m-%d %H:%M:%S",
-    am_pm_names: {"am", "pm"},
-    month_names:
-      ~w(January February March April May June July August September October November December),
-    day_of_week_names: ~w(Monday Tuesday Wednesday Thursday Friday Saturday Sunday),
-    abbreviation_size: 3,
-    preferred_datetime_invoked: false,
-    preferred_date_invoked: false,
-    preferred_time_invoked: false
-  }
-
   @doc """
   Formats received datetime into a string.
 
@@ -95,14 +81,17 @@ defmodule NimbleStrftime do
       it can't contain the `%X` format and defaults to `"%H:%M:%S"`
       if the option is not received
 
-    * `:am_pm_names` - a tuple for the terms to be used as `am` and `pm`, respectively
-      it defaults to `{"am", "pm"}` if the option is not received
+    * `:am_pm_names` - a function that receives either `:am` or `:pm` and returns
+      the name of the period of the day, if the option is not received it defaults
+      to a function that returns `"am"` and `"pm"`, respectively
 
-    *  `:month_names` - a list with month names in order, defaults to a list of
-      month names in english if the option is not received
+    *  `:month_names` - a function that receives a number and returns the name of
+      the corresponding month, if the option is not received it defaults to a
+      function thet returns the month names in english
 
-    * `:day_of_week_names` - a list with the name of the days in the week, defaults
-      to the name of the days of week in english if the option is not received
+    * `:day_of_week_names` - a function that receives a number and returns the name of
+      the corresponding day of week, if the option is not received it defaults to a
+      function that returns the day of week names in english
 
     * `:abbreviation_size` - number of characters shown in abbreviated
       month and week day names, if the option is not received the default of 3 is set
@@ -128,23 +117,22 @@ defmodule NimbleStrftime do
       iex> NimbleStrftime.format(
       ...>  ~U[2019-08-26 13:52:06.0Z],
       ...>  "%A",
-      ...>  day_of_week_names: ~w(
-      ...>    segunda-feira terça-feira
-      ...>    quarta-feira quinta-feira
-      ...>    sexta-feira sábado domingo
-      ...>  )
+      ...>  day_of_week_names: fn day_of_week ->
+      ...>    {"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
+      ...>    "sexta-feira", "sábado", "domingo"}
+      ...>    |> elem(day_of_week - 1)
+      ...>  end
       ...>)
       "segunda-feira"
 
       iex> NimbleStrftime.format(
       ...>  ~U[2019-08-26 13:52:06.0Z],
       ...>  "%B",
-      ...>  month_names: ~w(
-      ...>    январь февраль март
-      ...>    апрель май июнь
-      ...>    июль август сентябрь
-      ...>    октябрь ноябрь декабрь
-      ...>  )
+      ...>  month_names: fn month ->
+      ...>    {"январь", "февраль", "март", "апрель", "май", "июнь",
+      ...>    "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"}
+      ...>    |> elem(month - 1)
+      ...>  end
       ...>)
       "август"
   """
@@ -205,28 +193,20 @@ defmodule NimbleStrftime do
   end
 
   defp am_pm(hour, format_options) when hour > 11 do
-    elem(format_options.am_pm_names, 1)
+    format_options.am_pm_names.(:pm)
   end
 
   defp am_pm(hour, format_options) when hour <= 11 do
-    elem(format_options.am_pm_names, 0)
+    format_options.am_pm_names.(:am)
   end
 
-  defp month_name(index, format_options) when index > 0 and index < 13 do
-    Enum.fetch!(format_options.month_names, index - 1)
+  defp month_name_abbreviated(month, format_options) do
+    String.slice(format_options.month_names.(month), 0..(format_options.abbreviation_size - 1))
   end
 
-  defp month_name_abbreviated(index, format_options) do
-    String.slice(month_name(index, format_options), 0..(format_options.abbreviation_size - 1))
-  end
-
-  defp day_of_week_name(index, format_options) when index > 0 and index < 8 do
-    Enum.fetch!(format_options.day_of_week_names, index - 1)
-  end
-
-  defp day_of_week_name_abbreviated(index, format_options) do
+  defp day_of_week_name_abbreviated(day_of_week, format_options) do
     String.slice(
-      day_of_week_name(index, format_options),
+      format_options.day_of_week_names.(day_of_week),
       0..(format_options.abbreviation_size - 1)
     )
   end
@@ -260,7 +240,7 @@ defmodule NimbleStrftime do
     result =
       datetime
       |> Date.day_of_week()
-      |> day_of_week_name(format_options)
+      |> format_options.day_of_week_names.()
       |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -278,7 +258,7 @@ defmodule NimbleStrftime do
 
   # Full month name
   defp format_modifiers("B" <> rest, width, pad, datetime, format_options, acc) do
-    result = datetime.month |> month_name(format_options) |> pad_leading(width, pad)
+    result = datetime.month |> format_options.month_names.() |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
   end
@@ -492,7 +472,30 @@ defmodule NimbleStrftime do
     do: do_pad_leading(count - 1, padding, [padding | acc])
 
   defp options(user_options) do
-    Enum.reduce(user_options, @default_options, fn {key, value}, acc ->
+    default_options = %{
+      preferred_date: "%Y-%m-%d",
+      preferred_time: "%H:%M:%S",
+      preferred_datetime: "%Y-%m-%d %H:%M:%S",
+      am_pm_names: fn
+        :am -> "am"
+        :pm -> "pm"
+      end,
+      month_names: fn month ->
+        {"January", "February", "March", "April", "May", "June", "July", "August", "September",
+         "October", "November", "December"}
+        |> elem(month - 1)
+      end,
+      day_of_week_names: fn day_of_week ->
+        {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
+        |> elem(day_of_week - 1)
+      end,
+      abbreviation_size: 3,
+      preferred_datetime_invoked: false,
+      preferred_date_invoked: false,
+      preferred_time_invoked: false
+    }
+
+    Enum.reduce(user_options, default_options, fn {key, value}, acc ->
       if Map.has_key?(acc, key) do
         %{acc | key => value}
       else
