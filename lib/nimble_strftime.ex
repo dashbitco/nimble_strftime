@@ -89,12 +89,17 @@ defmodule NimbleStrftime do
       the corresponding month, if the option is not received it defaults to a
       function thet returns the month names in english
 
+    * `:abbreviated_month_names` - a function that receives a number and returns the
+      abbreviated name of the corresponding month, if the option is not received it
+      defaults to a function thet returns the abbreviated month names in english
+
     * `:day_of_week_names` - a function that receives a number and returns the name of
       the corresponding day of week, if the option is not received it defaults to a
       function that returns the day of week names in english
 
-    * `:abbreviation_size` - number of characters shown in abbreviated
-      month and week day names, if the option is not received the default of 3 is set
+    * `:abbreviated_day_of_week_names` - a function that receives a number and returns
+      the abbreviated name of the corresponding day of week, if the option is not received 
+      it defaults to a function that returns the abbreviated day of week names in english
 
   ## Examples
 
@@ -200,17 +205,6 @@ defmodule NimbleStrftime do
     format_options.am_pm_names.(:am)
   end
 
-  defp month_name_abbreviated(month, format_options) do
-    String.slice(format_options.month_names.(month), 0..(format_options.abbreviation_size - 1))
-  end
-
-  defp day_of_week_name_abbreviated(day_of_week, format_options) do
-    String.slice(
-      format_options.day_of_week_names.(day_of_week),
-      0..(format_options.abbreviation_size - 1)
-    )
-  end
-
   defp default_pad(format) when format in 'aAbBpPZ', do: ?\s
   defp default_pad(_format), do: ?0
 
@@ -229,7 +223,7 @@ defmodule NimbleStrftime do
     result =
       datetime
       |> Date.day_of_week()
-      |> day_of_week_name_abbreviated(format_options)
+      |> format_options.abbreviated_day_of_week_names.()
       |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -250,7 +244,7 @@ defmodule NimbleStrftime do
   defp format_modifiers("b" <> rest, width, pad, datetime, format_options, acc) do
     result =
       datetime.month
-      |> month_name_abbreviated(format_options)
+      |> format_options.abbreviated_month_names.()
       |> pad_leading(width, pad)
 
     parse(rest, datetime, format_options, [result | acc])
@@ -489,7 +483,13 @@ defmodule NimbleStrftime do
         {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
         |> elem(day_of_week - 1)
       end,
-      abbreviation_size: 3,
+      abbreviated_month_names: fn month ->
+        {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+        |> elem(month - 1)
+      end,
+      abbreviated_day_of_week_names: fn day_of_week ->
+        {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"} |> elem(day_of_week - 1)
+      end,
       preferred_datetime_invoked: false,
       preferred_date_invoked: false,
       preferred_time_invoked: false

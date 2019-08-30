@@ -98,7 +98,7 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(am_time, "%P %p") == "am AM"
     end
 
-    test "format all weekdays correctly with %A and %a options" do
+    test "format all weekdays correctly with %A and %a formats" do
       sunday = ~U[2019-08-25 11:59:59.001Z]
       monday = ~U[2019-08-26 11:59:59.001Z]
       tuesday = ~U[2019-08-27 11:59:59.001Z]
@@ -116,7 +116,7 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(saturday, "%A %a") == "Saturday Sat"
     end
 
-    test "format all months correctly with the %B and %b options" do
+    test "format all months correctly with the %B and %b formats" do
       assert NimbleStrftime.format(%{month: 1}, "%B %b") == "January Jan"
       assert NimbleStrftime.format(%{month: 2}, "%B %b") == "February Feb"
       assert NimbleStrftime.format(%{month: 3}, "%B %b") == "March Mar"
@@ -129,6 +129,162 @@ defmodule NimbleStrftimeTest do
       assert NimbleStrftime.format(%{month: 10}, "%B %b") == "October Oct"
       assert NimbleStrftime.format(%{month: 11}, "%B %b") == "November Nov"
       assert NimbleStrftime.format(%{month: 12}, "%B %b") == "December Dec"
+    end
+
+    test "format all weekdays correctly on %A with day_of_week_names option" do
+      sunday = ~U[2019-08-25 11:59:59.001Z]
+      monday = ~U[2019-08-26 11:59:59.001Z]
+      tuesday = ~U[2019-08-27 11:59:59.001Z]
+      wednesday = ~U[2019-08-28 11:59:59.001Z]
+      thursday = ~U[2019-08-29 11:59:59.001Z]
+      friday = ~U[2019-08-30 11:59:59.001Z]
+      saturday = ~U[2019-08-31 11:59:59.001Z]
+
+      day_of_week_names = fn day_of_week ->
+        {"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado",
+         "domingo"}
+        |> elem(day_of_week - 1)
+      end
+
+      assert NimbleStrftime.format(sunday, "%A", day_of_week_names: day_of_week_names) ==
+               "domingo"
+
+      assert NimbleStrftime.format(monday, "%A", day_of_week_names: day_of_week_names) ==
+               "segunda-feira"
+
+      assert NimbleStrftime.format(tuesday, "%A", day_of_week_names: day_of_week_names) ==
+               "terça-feira"
+
+      assert NimbleStrftime.format(wednesday, "%A", day_of_week_names: day_of_week_names) ==
+               "quarta-feira"
+
+      assert NimbleStrftime.format(thursday, "%A", day_of_week_names: day_of_week_names) ==
+               "quinta-feira"
+
+      assert NimbleStrftime.format(friday, "%A", day_of_week_names: day_of_week_names) ==
+               "sexta-feira"
+
+      assert NimbleStrftime.format(saturday, "%A", day_of_week_names: day_of_week_names) ==
+               "sábado"
+    end
+
+    test "format all months correctly on the %B with month_names option" do
+      month_names = fn month ->
+        {"январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь",
+         "октябрь", "ноябрь", "декабрь"}
+        |> elem(month - 1)
+      end
+
+      assert NimbleStrftime.format(%{month: 1}, "%B", month_names: month_names) == "январь"
+      assert NimbleStrftime.format(%{month: 2}, "%B", month_names: month_names) == "февраль"
+      assert NimbleStrftime.format(%{month: 3}, "%B", month_names: month_names) == "март"
+      assert NimbleStrftime.format(%{month: 4}, "%B", month_names: month_names) == "апрель"
+      assert NimbleStrftime.format(%{month: 5}, "%B", month_names: month_names) == "май"
+      assert NimbleStrftime.format(%{month: 6}, "%B", month_names: month_names) == "июнь"
+      assert NimbleStrftime.format(%{month: 7}, "%B", month_names: month_names) == "июль"
+      assert NimbleStrftime.format(%{month: 8}, "%B", month_names: month_names) == "август"
+      assert NimbleStrftime.format(%{month: 9}, "%B", month_names: month_names) == "сентябрь"
+      assert NimbleStrftime.format(%{month: 10}, "%B", month_names: month_names) == "октябрь"
+      assert NimbleStrftime.format(%{month: 11}, "%B", month_names: month_names) == "ноябрь"
+      assert NimbleStrftime.format(%{month: 12}, "%B", month_names: month_names) == "декабрь"
+    end
+
+    test "format all weekdays correctly on the %a format with abbreviated_day_of_week_names option" do
+      sunday = ~U[2019-08-25 11:59:59.001Z]
+      monday = ~U[2019-08-26 11:59:59.001Z]
+      tuesday = ~U[2019-08-27 11:59:59.001Z]
+      wednesday = ~U[2019-08-28 11:59:59.001Z]
+      thursday = ~U[2019-08-29 11:59:59.001Z]
+      friday = ~U[2019-08-30 11:59:59.001Z]
+      saturday = ~U[2019-08-31 11:59:59.001Z]
+
+      abbreviated_day_of_week_names = fn day_of_week ->
+        {"seg", "ter", "qua", "qui", "sex", "sáb", "dom"}
+        |> elem(day_of_week - 1)
+      end
+
+      assert NimbleStrftime.format(sunday, "%a",
+               abbreviated_day_of_week_names: abbreviated_day_of_week_names
+             ) == "dom"
+
+      assert NimbleStrftime.format(monday, "%a",
+               abbreviated_day_of_week_names: abbreviated_day_of_week_names
+             ) == "seg"
+
+      assert NimbleStrftime.format(tuesday, "%a",
+               abbreviated_day_of_week_names: abbreviated_day_of_week_names
+             ) == "ter"
+
+      assert NimbleStrftime.format(wednesday, "%a",
+               abbreviated_day_of_week_names: abbreviated_day_of_week_names
+             ) == "qua"
+
+      assert NimbleStrftime.format(thursday, "%a",
+               abbreviated_day_of_week_names: abbreviated_day_of_week_names
+             ) == "qui"
+
+      assert NimbleStrftime.format(friday, "%a",
+               abbreviated_day_of_week_names: abbreviated_day_of_week_names
+             ) == "sex"
+
+      assert NimbleStrftime.format(saturday, "%a",
+               abbreviated_day_of_week_names: abbreviated_day_of_week_names
+             ) == "sáb"
+    end
+
+    test "format all months correctly on the %b format with abbreviated_month_names option" do
+      abbreviated_month_names = fn month ->
+        {"янв", "февр", "март", "апр", "май", "июнь", "июль", "авг", "сент", "окт", "нояб", "дек"}
+        |> elem(month - 1)
+      end
+
+      assert NimbleStrftime.format(%{month: 1}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "янв"
+
+      assert NimbleStrftime.format(%{month: 2}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "февр"
+
+      assert NimbleStrftime.format(%{month: 3}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "март"
+
+      assert NimbleStrftime.format(%{month: 4}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "апр"
+
+      assert NimbleStrftime.format(%{month: 5}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "май"
+
+      assert NimbleStrftime.format(%{month: 6}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "июнь"
+
+      assert NimbleStrftime.format(%{month: 7}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "июль"
+
+      assert NimbleStrftime.format(%{month: 8}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "авг"
+
+      assert NimbleStrftime.format(%{month: 9}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "сент"
+
+      assert NimbleStrftime.format(%{month: 10}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "окт"
+
+      assert NimbleStrftime.format(%{month: 11}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "нояб"
+
+      assert NimbleStrftime.format(%{month: 12}, "%b",
+               abbreviated_month_names: abbreviated_month_names
+             ) == "дек"
     end
 
     test "microseconds format ignores padding and width options" do
@@ -172,7 +328,7 @@ defmodule NimbleStrftimeTest do
     test "format according to received custom configs" do
       assert NimbleStrftime.format(
                ~U[2019-08-15 17:07:57.001Z],
-               "%A %p %B %c %x %X",
+               "%A %a %p %B %b %c %x %X",
                am_pm_names: fn
                  :am -> "a"
                  :pm -> "p"
@@ -187,10 +343,19 @@ defmodule NimbleStrftimeTest do
                   "воскресенье"}
                  |> elem(day_of_week - 1)
                end,
+               abbreviated_month_names: fn month ->
+                 {"Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov",
+                  "Dez"}
+                 |> elem(month - 1)
+               end,
+               abbreviated_day_of_week_names: fn day_of_week ->
+                 {"ПНД", "ВТР", "СРД", "ЧТВ", "ПТН", "СБТ", "ВСК"}
+                 |> elem(day_of_week - 1)
+               end,
                preferred_date: "%05Y-%m-%d",
                preferred_time: "%M:%_3H%S",
                preferred_datetime: "%%"
-             ) == "четверг P Agosto % 02019-08-15 07: 1757"
+             ) == "четверг ЧТВ P Agosto Ago % 02019-08-15 07: 1757"
     end
   end
 end
