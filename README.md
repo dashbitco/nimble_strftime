@@ -65,7 +65,7 @@ Add `nimble_strftime` to your dependencies:
 ```elixir
 def deps do
   [
-    {:nimble_strftime, github: "plataformatec/nimble_strftime"}
+    {:nimble_strftime, "~> 0.1"}
   ]
 end
 ```

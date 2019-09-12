@@ -7,6 +7,8 @@ defmodule NimbleStrftime.MixProject do
       app: :nimble_strftime,
       version: @version,
       elixir: "~> 1.9",
+      name: "NimbleStrftime",
+      description: "strftime-based datetime formatter for Elixir",
       deps: deps(),
       docs: docs(),
       package: package()
