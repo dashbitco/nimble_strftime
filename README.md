@@ -58,6 +58,8 @@ iex> NimbleStrftime.format(
 # => "авг"
 ```
 
+For more information, please consult the [online documentation](https://hexdocs.pm/nimble_strftime/NimbleStrftime.html)
+
 ## Installation
 
 Add `nimble_strftime` to your dependencies:
