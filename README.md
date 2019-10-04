@@ -7,7 +7,7 @@ strings based on the `strftime` tool found on UNIX-like systems.
 
 Once installed, you can format your calendar types right away:
 
-```iex
+```elixir
 iex> datetime = ~U[2019-08-26 13:52:06.0Z]
 # year(2 digits)-month-day hour(in a 12 hour clock):minute:second AM/PM
 iex> NimbleStrftime.format(datetime, "%y-%m-%d %I:%M:%S %p")
@@ -26,7 +26,7 @@ You can also pass configuration parameters to set preferred formats,
 set the size of abbreviated names and change the names of months,
 week days, am and pm:
 
-```iex
+```elixir
 iex> datetime = ~U[2019-08-26 13:52:06.0Z]
 
 # preferred datetime, configured to something else
