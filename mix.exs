@@ -26,7 +26,7 @@ defmodule NimbleStrftime.MixProject do
 
   defp package do
     %{
-      licenses: ["Apache 2"],
+      licenses: ["Apache-2.0"],
       maintainers: ["Gustavo Santos Ferreira", "José Valim"],
       links: %{"GitHub" => @source_url}
     }
