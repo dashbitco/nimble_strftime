@@ -40,7 +40,7 @@ iex> NimbleStrftime.format(
 ...>  day_of_week_names: fn day_of_week ->
 ...>    {"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
 ...>    "sexta-feira", "sábado", "domingo"}
-...>    |> elem(index - 1)
+...>    |> elem(day_of_week - 1)
 ...>  end
 ...>)
 "segunda-feira"
@@ -52,7 +52,7 @@ iex> NimbleStrftime.format(
 ...>  abbreviated_month_names: fn month ->
 ...>    {"янв", "февр", "март", "апр", "май", "июнь",
 ...>    "июль", "авг", "сент", "окт", "нояб", "дек"}
-...>    |> elem(index - 1)
+...>    |> elem(month - 1)
 ...>  end
 ...>)
 # => "авг"
