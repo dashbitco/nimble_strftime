@@ -153,7 +153,7 @@ defmodule NimbleStrftime do
   end
 
   defp parse("", _datetime, _format_options, acc),
-    do: acc |> Enum.reverse()
+    do: Enum.reverse(acc)
 
   defp parse("%" <> rest, datetime, format_options, acc),
     do: parse_modifiers(rest, nil, nil, {datetime, format_options, acc})
