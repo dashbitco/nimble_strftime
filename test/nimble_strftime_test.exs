@@ -64,7 +64,8 @@ defmodule NimbleStrftimeTest do
       )
     end
 
-    test "ignore width when receiving the `-` padding option" do
+    test "`-` removes padding" do
+      assert NimbleStrftime.format(~D[2019-01-01], "%-j") == "1"
       assert NimbleStrftime.format(~T[17:07:57.001], "%-999M") == "7"
     end
 

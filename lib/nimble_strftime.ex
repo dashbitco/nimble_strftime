@@ -162,7 +162,7 @@ defmodule NimbleStrftime do
     do: parse(rest, datetime, format_options, [char | acc])
 
   defp parse_modifiers("-" <> rest, width, nil, parser_data) do
-    parse_modifiers(rest, width, ?-, parser_data)
+    parse_modifiers(rest, width, "", parser_data)
   end
 
   defp parse_modifiers("0" <> rest, width, nil, parser_data) do
