@@ -67,7 +67,7 @@ Add `nimble_strftime` to your dependencies:
 ```elixir
 def deps do
   [
-    {:nimble_strftime, "~> 0.1"}
+    {:nimble_strftime, "~> 0.1.0"}
   ]
 end
 ```
