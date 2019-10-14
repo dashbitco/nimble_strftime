@@ -141,7 +141,7 @@ defmodule NimbleStrftime do
       ...>)
       "август"
   """
-  @spec format(map(), String.t(), list({atom(), any()})) :: String.t()
+  @spec format(map(), String.t(), keyword()) :: String.t()
   def format(date_or_time_or_datetime, string_format, user_options \\ []) do
     parse(
       string_format,
