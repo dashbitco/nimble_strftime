@@ -44,7 +44,7 @@ defmodule NimbleStrftime do
   P      | "am" or "pm" (noon is "pm", midnight as "am")                           | am, pm
   q      | Quarter                                                                 | 1, 2, 3, 4
   S      | Second                                                                  | 00, 59, 60
-  u      | Day of the week                                                         | 01 (monday), 07 (sunday)
+  u      | Day of the week                                                         | 1 (Monday), 7 (Sunday)
   x      | Preferred date (without time) representation                            | 2018-10-17
   X      | Preferred time (without date) representation                            | 12:34:56
   y      | Year as 2-digits                                                        | 01, 01, 86, 18
@@ -208,7 +208,7 @@ defmodule NimbleStrftime do
   defp default_pad(format) when format in 'aAbBpPZ', do: ?\s
   defp default_pad(_format), do: ?0
 
-  defp default_width(format) when format in 'dHImMSuy', do: 2
+  defp default_width(format) when format in 'dHImMSy', do: 2
   defp default_width(?j), do: 3
   defp default_width(format) when format in 'Yz', do: 4
   defp default_width(_format), do: 0

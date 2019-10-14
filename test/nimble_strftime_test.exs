@@ -322,7 +322,7 @@ defmodule NimbleStrftimeTest do
                ~U[2019-08-15 17:07:57.001Z],
                "%04% %a %A %b %B %-3c %d %f %H %I %j %m %_5M %p %P %q %S %u %x %X %y %Y %z %Z"
              ) ==
-               "000% Thu Thursday Aug August 2019-08-15 17:07:57 15 001 17 05 227 08     7 PM pm 3 57 04 2019-08-15 17:07:57 19 2019 +0000 UTC"
+               "000% Thu Thursday Aug August 2019-08-15 17:07:57 15 001 17 05 227 08     7 PM pm 3 57 4 2019-08-15 17:07:57 19 2019 +0000 UTC"
     end
 
     test "format according to received custom configs" do
