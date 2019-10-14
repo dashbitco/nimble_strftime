@@ -1,6 +1,7 @@
 defmodule NimbleStrftime.MixProject do
   use Mix.Project
   @version "0.1.0"
+  @source_url "https://github.com/plataformatec/nimble_strftime"
 
   def project do
     [
@@ -19,7 +20,7 @@ defmodule NimbleStrftime.MixProject do
     [
       main: "NimbleStrftime",
       source_ref: "v#{@version}",
-      source_url: "https://github.com/plataformatec/nimble_strftime"
+      source_url: @source_url
     ]
   end
 
@@ -27,7 +28,7 @@ defmodule NimbleStrftime.MixProject do
     %{
       licenses: ["Apache 2"],
       maintainers: ["Gustavo Santos Ferreira", "José Valim"],
-      links: %{"GitHub" => "https://github.com/plataformatec/nimble_strftime"}
+      links: %{"GitHub" => @source_url}
     }
   end
 
