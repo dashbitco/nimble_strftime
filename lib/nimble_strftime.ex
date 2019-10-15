@@ -12,9 +12,9 @@ defmodule NimbleStrftime do
   where:
 
     * `%`: indicates the start of a formatted section
-    * `<padding>`: is an option to set the padding of the formatted section and accepts the following options
-    * `<width>`: a number indicating the minimun size of the formatted section
-    * `<format>`: the format iself, dictates what info is shown on this formatted section
+    * `<padding>`: set the padding (see below)
+    * `<width>`: a number indicating the minimum size of the formatted section
+    * `<format>`: the format iself (see below)
 
   ### Accepted padding options
 
