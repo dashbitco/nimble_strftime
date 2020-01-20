@@ -1,5 +1,7 @@
 # NimbleStrftime
 
+Note: [`NimbleStrftime` will be added to Elixir v1.11](https://github.com/elixir-lang/elixir/issues/9503).
+
 `nimble_strftime` is a simple and fast library for formatting datetimes into
 strings based on the `strftime` tool found on UNIX-like systems.
 
@@ -71,13 +73,6 @@ def deps do
   ]
 end
 ```
-
-## Nimble*
-
-Other nimble libraries by Plataformatec:
-
-  * [NimbleParsec](https://github.com/plataformatec/nimble_parsec) - simple and fast parser combinators
-  * [NimbleCSV](https://github.com/plataformatec/nimble_csv) - simple and fast CSV parsing
 
 # License
 
